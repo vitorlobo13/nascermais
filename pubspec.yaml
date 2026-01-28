@@ -1,5 +1,5 @@
-name: doula_admin
-description: Um aplicativo que estou desenvolvendo para facilitar o dia a dia das doulas.
+name: nascer_mais
+description: Um aplicativo que estou desenvolvendo para facilitar o dia a dia dos profissionais da obstetrícia.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
