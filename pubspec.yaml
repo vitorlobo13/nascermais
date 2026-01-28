@@ -60,7 +60,7 @@ dev_dependencies:
 
 flutter_icons:
   android: true
-  ios: false
+  ios: true
   image_path: "web/Doula_admin.png"
 
 
