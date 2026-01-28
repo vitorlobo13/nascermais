@@ -10,13 +10,19 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0' # Versão mais estável para builds atuais
+          flutter-version: '3.19.0'
           channel: 'stable'
           
       - name: Fix Project Structure
         run: |
-          # Este comando reconstrói as pastas nativas (Android/iOS) que o Zapp simplifica
+          # 1. Movemos nossa pasta 'lib' para um lugar seguro temporariamente
+          mv lib lib_backup
+          # 2. Reconstruímos as pastas nativas
           flutter create . --overwrite --platforms=android
+          # 3. Apagamos a 'lib' padrão que o Flutter criou
+          rm -rf lib
+          # 4. Trazemos nossa 'lib' original de volta
+          mv lib_backup lib
           
       - name: Install dependencies
         run: flutter pub get
