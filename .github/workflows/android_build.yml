@@ -15,26 +15,43 @@ jobs:
           
       - name: Fix Project and Dependencies
         run: |
-          # 1. Protege nossa pasta 'lib' e o pubspec.yaml
+          # 1. Protege a pasta 'lib' e o pubspec.yaml original
           mv lib lib_backup
           mv pubspec.yaml pubspec_backup.yaml
           
-          # 2. Reconstrói a estrutura nativa
+          # 2. Reconstrói a estrutura nativa (cria a pasta 'android')
           flutter create . --overwrite --platforms=android
           
-          # 3. Restaura nossa 'lib' e o pubspec.yaml original
+          # 3. Restaura a 'lib' e o pubspec.yaml original (com as configs do ícone)
           rm -rf lib
           mv lib_backup lib
           rm pubspec.yaml # Remove o pubspec.yaml gerado pelo flutter create
           mv pubspec_backup.yaml pubspec.yaml # Restaura o pubspec.yaml com as suas dependências
           
-          # 4. Reinstala TODAS as bibliotecas necessárias e obtém o flutter_launcher_icons
+          # 4. Instala todas as dependências (incluindo o flutter_launcher_icons)
           flutter pub get
           
       - name: Generate App Icons
         run: |
-          # Este comando executa o pacote e substitui os ícones nativos
+          # 5. Este comando executa o pacote e substitui os ícones nativos
           flutter pub run flutter_launcher_icons:main
+          
+      - name: Fix Android Manifest for Display Name
+        run: |
+          # 6. Altera o nome de exibição do app no AndroidManifest.xml
+          # Isso garante que o nome seja "Doula Admin" e não "doula_admin"
+          # O nome de exibição é definido no strings.xml, mas o flutter create pode ter gerado um AndroidManifest.xml que aponta para um nome genérico.
+          # A forma mais segura é garantir que o strings.xml tenha o nome correto.
+          
+          # Cria ou sobrescreve o strings.xml com o nome correto
+          mkdir -p android/app/src/main/res/values
+          echo '<?xml version="1.0" encoding="utf-8"?>' > android/app/src/main/res/values/strings.xml
+          echo '<resources>' >> android/app/src/main/res/values/strings.xml
+          echo '    <string name="app_name">Doula Admin</string>' >> android/app/src/main/res/values/strings.xml
+          echo '</resources>' >> android/app/src/main/res/values/strings.xml
+          
+          # Garante que o AndroidManifest.xml aponte para o app_name
+          sed -i 's/android:label=".*"/android:label="@string\/app_name"/' android/app/src/main/AndroidManifest.xml
           
       - name: Build APK
         run: flutter build apk --release
