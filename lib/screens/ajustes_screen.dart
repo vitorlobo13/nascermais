@@ -17,7 +17,9 @@ class AjustesScreen extends StatelessWidget {
 
     try {
       if (await canLaunchUrl(emailLaunchUri)) {
-        await launchUrl(emailLaunchUri);
+        await launchUrl(emailLaunchUri,
+                       mode: LaunchMode.externalApplication,
+                       );
       } else {
         // Fallback para web ou dispositivos sem app de email configurado
         debugPrint('Não foi possível abrir o app de e-mail');
@@ -119,3 +121,4 @@ class AjustesScreen extends StatelessWidget {
     );
   }
 }
+
