@@ -10,7 +10,7 @@ class AjustesScreen extends StatelessWidget {
       scheme: 'mailto',
       path: 'vitorlobo10@gmail.com',
       queryParameters: {
-        'subject': 'Feedback App Doula - Versão Beta',
+        'subject': 'Feedback App Nascer+ - Versão Beta',
         'body': 'Olá! Gostaria de sugerir o seguinte para o aplicativo...'
       },
     );
@@ -47,7 +47,7 @@ class AjustesScreen extends StatelessWidget {
                 const Icon(Icons.auto_awesome, size: 50, color: Colors.pink),
                 const SizedBox(height: 10),
                 const Text(
-                  'Doula Admin Beta',
+                  'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const Text('Versão 1.0.0', style: TextStyle(color: Colors.grey)),
@@ -81,7 +81,7 @@ class AjustesScreen extends StatelessWidget {
             padding: EdgeInsets.all(16.0),
             child: Text('GUIA RÁPIDO', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
           ),
-          _buildGuiaItem(Icons.people, 'Gestantes', 'Cadastre suas clientes e use os cartões para registrar aulas e informações do pré-natal.'),
+          _buildGuiaItem(Icons.people, 'Gestantes', 'Cadastre suas clientes e use os cartões para registrar aulas e informações do pré-natal. Dentro do cartão você pode registrar subtópicos, por exemplo, registrar medicamentos.'),
           _buildGuiaItem(Icons.attach_money, 'Financeiro', 'Defina o valor do contrato e registre cada pagamento recebido para ter controle total.'),
           _buildGuiaItem(Icons.search, 'Busca', 'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.'),
           _buildGuiaItem(Icons.delete_sweep, 'Excluir', 'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.'),
@@ -89,7 +89,7 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 40),
           const Center(
             child: Text(
-              'Desenvolvido com ❤️ para Doulas',
+              'Desenvolvido com ❤️ para quem vive o nascer',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
@@ -121,4 +121,5 @@ class AjustesScreen extends StatelessWidget {
     );
   }
 }
+
 
