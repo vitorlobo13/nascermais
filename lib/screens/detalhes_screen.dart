@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
 import 'subtopicos_screen.dart';
+import 'editar_gestante_screen.dart';
+
 
 class DetalhesGestanteScreen extends StatefulWidget {
   final Gestante gestante;
@@ -223,4 +225,5 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
     );
   }
 }
+
 
