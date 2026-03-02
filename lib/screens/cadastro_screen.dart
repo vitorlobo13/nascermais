@@ -19,6 +19,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
   DateTime? _dataUltra;
   int _semanasUltra = 0;
   int _diasUltra = 0;
+  DateTime? _dppDireta; // Nova variável para DPP direta	
   DateTime? _dppFinal;
   String _classificacaoRisco = 'Risco Habitual';
   String? _fotoPath;
@@ -34,12 +35,16 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
   void _calcularDPP() {
     setState(() {
-      if (_dataUltra != null) {
+	  if (_dppDireta != null) {
+        _dppFinal = _dppDireta;
+      } else if (_dataUltra != null) {
         int totalDiasUltra = (_semanasUltra * 7) + _diasUltra;
         int diasAte40Semanas = 280 - totalDiasUltra;
         _dppFinal = _dataUltra!.add(Duration(days: diasAte40Semanas));
       } else if (_dum != null) {
         _dppFinal = _dum!.add(const Duration(days: 280));
+	  } else {
+        _dppFinal = null;							 
       }
     });
   }
@@ -112,6 +117,27 @@ class _CadastroScreenState extends State<CadastroScreen> {
               },
             ),
             const Center(child: Text('OU', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
+            
+            // DPP DIRETA
+            ListTile(
+              tileColor: Colors.grey.shade100,
+              title: Text(_dppDireta == null ? 'Data Provável do Parto (DPP) Direta' : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () async {
+                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now().add(const Duration(days: 280))); // DPP pode ser no futuro
+                if (picked != null) {
+                  setState(() {
+                    _dppDireta = picked;
+                    _dum = null;
+                    _dataUltra = null;
+                    _semanasUltra = 0;
+                    _diasUltra = 0;
+                    _calcularDPP();
+                  });
+                }
+              },
+            ),
+            const Center(child: Text('OU', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),            
             
             // ULTRASSONOGRAFIA
             Container(
@@ -214,3 +240,4 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 }
+
