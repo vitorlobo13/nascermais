@@ -28,6 +28,16 @@ class CartaoFicha {
     concluido: json['concluido'] ?? false, 
     subtopicos: (json['subtopicos'] as List?)?.map((s) => Subtopico.fromJson(s)).toList() ?? []
   );
+  CartaoFicha copiar() {
+  return CartaoFicha(
+    titulo: titulo,
+    concluido: false, // Começa desmarcado para a nova gestante
+    subtopicos: subtopicos.map((s) => Subtopico(
+      texto: s.texto,
+      concluido: false, // Começa desmarcado
+    )).toList(),
+  );
+  }
 }
 
 class Gestante {
@@ -82,3 +92,4 @@ class Gestante {
     contratoEntregue: json['contratoEntregue'] ?? false,
   );
 }
+
