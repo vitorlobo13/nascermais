@@ -8,8 +8,9 @@ import 'editar_gestante_screen.dart';
 
 class DetalhesGestanteScreen extends StatefulWidget {
   final Gestante gestante;
+  final List<Gestante> todasAsGestantes;
 
-  const DetalhesGestanteScreen({super.key, required this.gestante});
+  const DetalhesGestanteScreen({super.key, required this.gestante, required this.todasAsGestantes});
 
   @override
   State<DetalhesGestanteScreen> createState() => _DetalhesGestanteScreenState();
@@ -23,6 +24,11 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
         title: Text(widget.gestante.nome),
         backgroundColor: Colors.pink.shade100,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.content_copy),
+            tooltip: 'Importar cartões de outra gestante',
+            onPressed: () => _importarFicha(widget.todasAsGestantes),
+          ),
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
@@ -272,6 +278,7 @@ void _importarFicha(List<Gestante> todasAsGestantes) {
   );
  }
 }
+
 
 
 
