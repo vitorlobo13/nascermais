@@ -224,6 +224,54 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
       ),
     );
   }
+void _importarFicha(List<Gestante> todasAsGestantes) {
+  final outras = todasAsGestantes.where((g) => g.nome != widget.gestante.nome).toList();
+
+  showModalBottomSheet(
+    context: context,
+    builder: (context) => Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('Copiar cartões de:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: outras.length,
+            itemBuilder: (context, index) {
+              final g = outras[index];
+              return ListTile(
+                leading: const Icon(Icons.copy),
+                title: Text(g.nome),
+                onTap: () {
+                  setState(() {
+                    // FILTRO INTELIGENTE:
+                    // Não copia cartões que começam com estas palavras
+                    final proibidos = ['Dpp', 'Maternidade', 'Risco'];
+
+                    for (var cartao in g.ficha) {
+                      bool ehPessoal = proibidos.any((p) => cartao.titulo.contains(p));
+                      
+                      if (!ehPessoal) {
+                        // Usa o método copiar() que criamos no modelo
+                        widget.gestante.ficha.add(cartao.copiar());
+                      }
+                    }
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cartões importados (DPP e Risco ignorados)')),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+ }
 }
+
 
 
