@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      DetalhesGestanteScreen(gestante: g)),
+                                      DetalhesGestanteScreen(gestante: g,todasAsGestantes: listaGestantes)),
                             ).then((_) {
                               setState(() {});
                               _salvarDados();
@@ -192,5 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
 
 
