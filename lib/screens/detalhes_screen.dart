@@ -74,6 +74,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                   // Outros campos como ficha, valorContrato, pagamentos, contratoEntregue
                   // são mantidos, pois a tela de edição não os altera diretamente.
                 });
+                await DatabaseHelper().updateGestante(widget.gestante);
               }
             },
           ),
@@ -403,3 +404,4 @@ void _exibirDialogoAdicionarItem(CartaoFicha cartao) {
 
 
 }
+
