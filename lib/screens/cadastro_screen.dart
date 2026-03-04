@@ -1,9 +1,11 @@
+import '../services/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
@@ -29,9 +31,43 @@ class _CadastroScreenState extends State<CadastroScreen> {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() => _fotoPath = image.path);
+        // 2. Abre o editor de corte (Crop)
+        CroppedFile? croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Força ser quadrado
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Ajustar Foto',
+              toolbarColor: Colors.pink,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.square,
+              lockAspectRatio: true, // Impede o usuário de desalinhar o quadrado
+            ),
+            IOSUiSettings(
+              title: 'Ajustar Foto',
+              aspectRatioLockEnabled: true,
+            ),
+            WebUiSettings(
+              context: context,
+              presentStyle: WebPresentStyle.dialog,
+              size: const CropperSize(width: 500, height: 500),
+              translations: const WebTranslations(
+                title: 'Ajustar Foto',
+                rotateLeftTooltip: 'Girar Esquerda',
+                rotateRightTooltip: 'Girar Direita',
+                cropButton: 'Confirmar',
+                cancelButton: 'Cancelar',
+              ),
+            ),
+          ],
+        );
+
+        // 3. Se o usuário confirmou o corte, salva o caminho da imagem cortada
+        if (croppedFile != null) {
+          setState(() => _fotoPath = croppedFile.path);
+        }
     }
-  }
+}
 
   void _calcularDPP() {
     setState(() {
@@ -200,7 +236,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
             
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _classificacaoRisco,
+              initialValue: _classificacaoRisco,
               decoration: const InputDecoration(labelText: 'Classificação de Risco', border: OutlineInputBorder()),
               items: ['Risco Habitual', 'Alto Risco'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
               onChanged: (val) => setState(() => _classificacaoRisco = val!),
@@ -211,20 +247,25 @@ class _CadastroScreenState extends State<CadastroScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_nomeController.text.isNotEmpty && _dppFinal != null) {
-                    final novaGestante = Gestante(
-                      nome: _nomeController.text,
-                      dppFinal: _dppFinal!,
-                      maternidade: _maternidadeController.text,
-                      classificacaoRisco: _classificacaoRisco,
-                      fotoPath: _fotoPath,
-                      ficha: [
-                        CartaoFicha(titulo: 'Dpp ${DateFormat('dd/MM/yyyy').format(_dppFinal!)}', concluido: true),
-                        CartaoFicha(titulo: 'Maternidade: ${_maternidadeController.text}', concluido: true),
-                        CartaoFicha(titulo: 'Risco: $_classificacaoRisco', concluido: true),
-                      ],
+                      final novaGestante = Gestante(
+                        nome: _nomeController.text,
+                        dppFinal: _dppFinal!,
+                        maternidade: _maternidadeController.text,
+                        classificacaoRisco: _classificacaoRisco,
+                        fotoPath: _fotoPath,
+                        ficha: [
+                          CartaoFicha(titulo: 'Dpp ${DateFormat('dd/MM/yyyy').format(_dppFinal!)}', concluido: true),
+                          CartaoFicha(titulo: 'Maternidade: ${_maternidadeController.text}', concluido: true),
+                          CartaoFicha(titulo: 'Risco: $_classificacaoRisco', concluido: true),
+                        ],
                     );
+                        // INSERE NO BANCO E PEGA O ID GERADO
+                    int idGerado = await DatabaseHelper().insertGestante(novaGestante);
+                    novaGestante.id = idGerado;
+                    if (!mounted) return;
+           
                     Navigator.pop(context, novaGestante);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha o nome e calcule a DPP')));

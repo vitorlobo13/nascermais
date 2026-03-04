@@ -42,17 +42,17 @@ class AjustesScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             color: Colors.pink.shade50,
-            child: Column(
+            child: const Column(
               children: [
-                const Icon(Icons.auto_awesome, size: 50, color: Colors.pink),
-                const SizedBox(height: 10),
-                const Text(
+                Icon(Icons.auto_awesome, size: 50, color: Colors.pink),
+                SizedBox(height: 10),
+                Text(
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                const Text('Versão 1.0.2', style: TextStyle(color: Colors.grey)),
-                const SizedBox(height: 10),
-                const Text(
+                Text('Versão 2.0.0', style: TextStyle(color: Colors.grey)),
+                SizedBox(height: 10),
+                Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
-import 'subtopicos_screen.dart';
 import 'editar_gestante_screen.dart';
+import '../services/database_helper.dart';
 
 
 class DetalhesGestanteScreen extends StatefulWidget {
@@ -28,6 +28,24 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
             icon: const Icon(Icons.content_copy),
             tooltip: 'Importar cartões de outra gestante',
             onPressed: () => _importarFicha(widget.todasAsGestantes),
+          ),
+          IconButton(
+            icon: Icon(widget.gestante.arquivada ? Icons.unarchive : Icons.archive),
+            tooltip: widget.gestante.arquivada ? 'Desarquivar' : 'Arquivar',
+            onPressed: () async {
+              // 1. Inverte o status de arquivamento
+              setState(() {
+                widget.gestante.arquivada = !widget.gestante.arquivada;
+              });
+              // 2. Salva no Banco de Dados (O nosso UPDATE)
+              await DatabaseHelper().updateGestante(widget.gestante);
+              // 3. Mostra um aviso rápido e volta para a tela anterior
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(widget.gestante.arquivada ? 'Gestante arquivada!' : 'Gestante reativada!')),
+              );
+              Navigator.pop(context, widget.gestante); // Volta para a Home com os dados atualizados
+           },
           ),
           IconButton(
             icon: const Icon(Icons.edit),
@@ -111,61 +129,111 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
           
           Expanded(
             child: ListView.builder(
+              // Removido o shrinkWrap e NeverScrollableScrollPhysics para permitir o scroll natural da lista
               itemCount: widget.gestante.ficha.length,
               itemBuilder: (context, index) {
-                final card = widget.gestante.ficha[index];
+                final cartao = widget.gestante.ficha[index];
+
                 return Dismissible(
-                  key: UniqueKey(),
-                  direction: DismissDirection.endToStart,
+                  // Key única para o cartão (Título + ID interno se houver)
+                  key: ObjectKey(cartao), 
+                  direction: DismissDirection.endToStart, // Arrastar para a esquerda
                   background: Container(
                     color: Colors.red,
                     alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  onDismissed: (direction) {
+                  confirmDismiss: (direction) async {
+                    return await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Excluir Cartão"),
+                        content: Text("Isso apagará o cartão '${cartao.titulo}' e todos os seus itens. Confirmar?"),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("CANCELAR")),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true), 
+                            child: const Text("EXCLUIR", style: TextStyle(color: Colors.red))
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onDismissed: (direction) async {
                     setState(() {
                       widget.gestante.ficha.removeAt(index);
                     });
+                    // Salva a remoção do cartão e seus itens no banco
+                    await DatabaseHelper().updateGestante(widget.gestante);
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Cartão '${cartao.titulo}' excluído")),
+                    );
                   },
                   child: Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    child: ListTile(
-                      leading: IconButton(
-                        icon: Icon(
-                          card.concluido ? Icons.check_circle : Icons.radio_button_unchecked,
-                          color: card.concluido ? Colors.green : Colors.grey,
-                        ),
-                        onPressed: () {
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ExpansionTile(
+                      leading: Checkbox(
+                        value: cartao.concluido,
+                        activeColor: Colors.green,
+                        onChanged: (bool? value) async {
                           setState(() {
-                            card.concluido = !card.concluido;
+                            cartao.concluido = value ?? false;
+                            if (cartao.concluido) {
+                              for (var sub in cartao.subtopicos) {
+                                sub.concluido = true;
+                              }
+                            }
                           });
+                          await DatabaseHelper().updateGestante(widget.gestante);
                         },
                       ),
                       title: Text(
-                        card.titulo,
-                        style: const TextStyle(
-                          // TEXTO SEMPRE PRETO E SEM RISCO (Conforme solicitado)
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.none,
+                        cartao.titulo,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          color: cartao.concluido ? Colors.black : Colors.pink,
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () {
-                          _editarTituloCard(index);
-                        },
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SubtopicosScreen(cartao: card),
+                      children: [
+                        const Divider(height: 1),
+                        // LISTA DE ITENS (EXCLUSÃO APENAS PELA LIXEIRA)
+                        ...cartao.subtopicos.map((sub) {
+                          return ListTile(
+                            dense: true,
+                            leading: Checkbox(
+                              value: sub.concluido,
+                              onChanged: (bool? val) async {
+                                setState(() {
+                                  sub.concluido = val ?? false;
+                                  cartao.concluido = cartao.subtopicos.every((s) => s.concluido);
+                                });
+                                await DatabaseHelper().updateGestante(widget.gestante);
+                              },
+                            ),
+                            title: Text(sub.texto),
+                            // O ícone de lixeira aqui exclui apenas o item específico
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                              onPressed: () async {
+                                setState(() => cartao.subtopicos.remove(sub));
+                                await DatabaseHelper().updateGestante(widget.gestante);
+                              },
+                            ),
+                          );
+                        }),
+                        
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: TextButton.icon(
+                            onPressed: () => _exibirDialogoAdicionarItem(cartao),
+                            icon: const Icon(Icons.add, size: 18, color: Colors.blue),
+                            label: const Text('Adicionar item', style: TextStyle(color: Colors.blue)),
                           ),
-                        ).then((_) => setState(() {}));
-                      },
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -277,6 +345,40 @@ void _importarFicha(List<Gestante> todasAsGestantes) {
     ),
   );
  }
+
+void _exibirDialogoAdicionarItem(CartaoFicha cartao) {
+  final TextEditingController itemController = TextEditingController();
+  
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Novo item em: ${cartao.titulo}'),
+      content: TextField(
+        controller: itemController,
+        autofocus: true,
+        decoration: const InputDecoration(hintText: 'Digite o nome do item...'),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        ElevatedButton(
+          onPressed: () async {
+            if (itemController.text.isNotEmpty) {
+              setState(() {
+                cartao.subtopicos.add(Subtopico(texto: itemController.text, concluido: false));
+                // Se adicionou item novo, o cartão não pode estar 100% concluído
+                cartao.concluido = false;
+              });
+              await DatabaseHelper().updateGestante(widget.gestante);
+              Navigator.pop(context);
+            }
+          },
+          child: const Text('Adicionar'),
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 

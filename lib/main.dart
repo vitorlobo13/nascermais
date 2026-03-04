@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/financeiro_screen.dart';
-import 'screens/ajustes_screen.dart'; // Import da nova tela
+import 'screens/ajustes_screen.dart';
 import 'models/gestante.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'services/database_helper.dart'; // Import do nosso novo serviço
 
 void main() {
+  // Garante que os plugins (como o SQLite) sejam inicializados antes do app rodar
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const NascerMais());
 }
 
@@ -37,6 +38,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
   List<Gestante> listaGestantes = [];
+  final DatabaseHelper _dbHelper = DatabaseHelper(); // Instância do banco
 
   @override
   void initState() {
@@ -44,26 +46,19 @@ class _MainNavigationState extends State<MainNavigation> {
     _carregarDados();
   }
 
+  // Carrega os dados do SQLite em vez do SharedPreferences
   Future<void> _carregarDados() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? gestantesJson = prefs.getString('lista_gestantes');
-    if (gestantesJson != null) {
-      final List<dynamic> listaDecodificada = jsonDecode(gestantesJson);
-      setState(() {
-        listaGestantes = listaDecodificada
-            .map((item) => Gestante.fromJson(item))
-            .toList();
-      });
-      // O setState acima já avisa o Flutter para redesenhar as abas com os novos dados!
-    }
+    final dados = await _dbHelper.getGestantes();
+    setState(() {
+      listaGestantes = dados;
+    });
   }
 
-
+  // Função para salvar (Insert ou Update)
   Future<void> _salvarDados(List<Gestante> gestantes) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String gestantesJson =
-        jsonEncode(gestantes.map((g) => g.toJson()).toList());
-    await prefs.setString('lista_gestantes', gestantesJson);
+    // Como agora o banco gerencia cada item individualmente, 
+    // esta função no main.dart servirá apenas para atualizar a UI local.
+    // O salvamento real será feito nas telas de Cadastro e Edição.
     setState(() {
       listaGestantes = gestantes;
     });
@@ -71,7 +66,6 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Lista de telas atualizada com a AjustesScreen
     final List<Widget> telas = [
       HomeScreen(
         gestantes: listaGestantes,
@@ -81,7 +75,7 @@ class _MainNavigationState extends State<MainNavigation> {
         gestantes: listaGestantes,
         onSave: _salvarDados,
       ),
-      const AjustesScreen(), // Nova tela de Ajuda e Feedback
+      const AjustesScreen(),
     ];
 
     return Scaffold(
@@ -93,20 +87,10 @@ class _MainNavigationState extends State<MainNavigation> {
             _selectedIndex = index;
           });
         },
-        // Adicionado o terceiro item na barra de navegação
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Gestantes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Financeiro',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Ajustes',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Gestantes'),
+          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Financeiro'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
         ],
       ),
     );

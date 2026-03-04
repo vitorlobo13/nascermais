@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
+import 'package:image_cropper/image_cropper.dart';
+
 
 class EditarGestanteScreen extends StatefulWidget {
   final Gestante gestante;
@@ -49,9 +51,34 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
 
   Future<void> _escolherFoto() async {
     final ImagePicker picker = ImagePicker();
+    
+    // 1. Seleciona a imagem da galeria
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
     if (image != null) {
-      setState(() => _fotoPath = image.path);
+      // 2. Abre o editor de corte (Crop)
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Mantém o quadrado perfeito
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Ajustar Foto',
+            toolbarColor: Colors.pink,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true, // Trava a proporção em 1:1
+          ),
+          IOSUiSettings(
+            title: 'Ajustar Foto',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+
+      // 3. Se o usuário confirmou o corte, atualiza o caminho da foto
+      if (croppedFile != null) {
+        setState(() => _fotoPath = croppedFile.path);
+      }
     }
   }
 
@@ -213,7 +240,7 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
               ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _classificacaoRisco,
+              initialValue: _classificacaoRisco,
               decoration: const InputDecoration(labelText: 'Classificação de Risco', border: OutlineInputBorder()),
               items: ['Risco Habitual', 'Alto Risco'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
               onChanged: (val) => setState(() => _classificacaoRisco = val!),
