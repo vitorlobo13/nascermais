@@ -262,11 +262,12 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (controller.text.isNotEmpty) {
                 setState(() {
                   widget.gestante.ficha.add(CartaoFicha(titulo: controller.text));
                 });
+                await DatabaseHelper().updateGestante(widget.gestante);
                 Navigator.pop(context);
               }
             },
@@ -287,11 +288,12 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (controller.text.isNotEmpty) {
                 setState(() {
                   widget.gestante.ficha[index].titulo = controller.text;
                 });
+                await DatabaseHelper().updateGestante(widget.gestante);
                 Navigator.pop(context);
               }
             },
@@ -320,7 +322,7 @@ void _importarFicha(List<Gestante> todasAsGestantes) {
               return ListTile(
                 leading: const Icon(Icons.copy),
                 title: Text(g.nome),
-                onTap: () {
+                onTap: () async {
                   setState(() {
                     // FILTRO INTELIGENTE:
                     // Não copia cartões que começam com estas palavras
@@ -335,6 +337,7 @@ void _importarFicha(List<Gestante> todasAsGestantes) {
                       }
                     }
                   });
+                  await DatabaseHelper().updateGestante(widget.gestante);
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Cartões importados (DPP e Risco ignorados)')),
@@ -397,5 +400,6 @@ void _exibirDialogoAdicionarItem(CartaoFicha cartao) {
     }
 
 }
+
 
 }
