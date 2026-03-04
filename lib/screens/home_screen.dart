@@ -5,6 +5,9 @@ import '../models/gestante.dart';
 import 'cadastro_screen.dart';
 import 'detalhes_screen.dart';
 import '../services/database_helper.dart';
+import 'dart:convert';
+
+
 
 class HomeScreen extends StatefulWidget {
   final List<Gestante> gestantes;
@@ -177,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 radius: 25,
                                 backgroundColor: isArquivada ? Colors.grey.shade400 : Colors.pink.shade100,
                                 backgroundImage: (g.fotoPath != null && g.fotoPath!.isNotEmpty)
-                                    ? FileImage(File(g.fotoPath!))
+                                    ? _buildImageProvider(g.fotoPath!)
                                     : null,
                                 child: (g.fotoPath == null || g.fotoPath!.isEmpty)
                                     ? Text(
@@ -244,5 +247,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         label: const Text('Nova Gestante', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
+  }
+
+    ImageProvider? _buildImageProvider(String path) {
+    if (path.startsWith('data:image')) {
+      // Data URI — extrair o base64 após a vírgula
+      final base64Str = path.split(',').last;
+      return MemoryImage(base64Decode(base64Str));
+    } else if (path.startsWith('base64:')) {
+      return MemoryImage(base64Decode(path.substring(7)));
+    } else if (path.startsWith('http')) {
+      return NetworkImage(path);
+    } else {
+      // Caminho local (só funciona em mobile)
+      return FileImage(File(path));
+    }
   }
 }

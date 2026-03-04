@@ -6,6 +6,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'dart:convert';
+import 'dart:typed_data';
+
+
+
 
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
@@ -62,12 +67,18 @@ class _CadastroScreenState extends State<CadastroScreen> {
           ],
         );
 
-        // 3. Se o usuário confirmou o corte, salva o caminho da imagem cortada
         if (croppedFile != null) {
-          setState(() => _fotoPath = croppedFile.path);
+              if (kIsWeb) {
+                // CONVERSÃO PARA BASE64 NO WEB
+                final bytes = await croppedFile.readAsBytes(); //
+                final base64Image = base64Encode(bytes); //
+                setState(() => _fotoPath = 'base64:$base64Image');
+              } else {
+                setState(() => _fotoPath = croppedFile.path);
+              }
+            }
+          }
         }
-    }
-}
 
   void _calcularDPP() {
     setState(() {
@@ -107,8 +118,8 @@ class _CadastroScreenState extends State<CadastroScreen> {
                       radius: 50,
                       backgroundColor: Colors.pink.shade50,
                       backgroundImage: _fotoPath != null 
-                        ? (kIsWeb ? NetworkImage(_fotoPath!) : FileImage(File(_fotoPath!)) as ImageProvider)
-                        : null,
+                          ? _buildImageProvider(_fotoPath!)
+                          : null,
                       child: _fotoPath == null 
                         ? const Icon(Icons.camera_alt, size: 40, color: Colors.pink) 
                         : null,
@@ -280,5 +291,22 @@ class _CadastroScreenState extends State<CadastroScreen> {
       ),
     );
   }
+
+ImageProvider? _buildImageProvider(String path) {
+  if (path.startsWith('data:image')) {
+    // Data URI — extrair o base64 após a vírgula
+    final base64Str = path.split(',').last;
+    return MemoryImage(base64Decode(base64Str));
+  } else if (path.startsWith('base64:')) {
+    return MemoryImage(base64Decode(path.substring(7)));
+  } else if (path.startsWith('http')) {
+    return NetworkImage(path);
+  } else {
+    // Caminho local (só funciona em mobile)
+    return FileImage(File(path));
+  }
+}
+
+
 }
 

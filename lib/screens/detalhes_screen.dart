@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
 import 'editar_gestante_screen.dart';
 import '../services/database_helper.dart';
+import 'dart:typed_data';
+import 'dart:convert';
+
 
 
 class DetalhesGestanteScreen extends StatefulWidget {
@@ -89,8 +92,8 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                   radius: 40,
                   backgroundColor: Colors.white,
                   backgroundImage: widget.gestante.fotoPath != null 
-                    ? (kIsWeb ? NetworkImage(widget.gestante.fotoPath!) : FileImage(File(widget.gestante.fotoPath!)) as ImageProvider)
-                    : null,
+                      ? _buildImageProvider(widget.gestante.fotoPath!)
+                      : null,
                   child: widget.gestante.fotoPath == null 
                     ? const Icon(Icons.person, size: 40, color: Colors.pink) 
                     : null,
@@ -379,8 +382,20 @@ void _exibirDialogoAdicionarItem(CartaoFicha cartao) {
   );
 }
 
+    ImageProvider? _buildImageProvider(String path) {
+    if (path.startsWith('data:image')) {
+      // Data URI — extrair o base64 após a vírgula
+      final base64Str = path.split(',').last;
+      return MemoryImage(base64Decode(base64Str));
+    } else if (path.startsWith('base64:')) {
+      return MemoryImage(base64Decode(path.substring(7)));
+    } else if (path.startsWith('http')) {
+      return NetworkImage(path);
+    } else {
+      // Caminho local (só funciona em mobile)
+      return FileImage(File(path));
+    }
+
 }
 
-
-
-
+}
