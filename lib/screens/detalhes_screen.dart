@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/gestante.dart';
+import '../services/image_convert_database.dart';
 import 'editar_gestante_screen.dart';
 import '../services/database_helper.dart';
-import 'dart:typed_data';
-import 'dart:convert';
+
 
 
 
@@ -20,6 +18,7 @@ class DetalhesGestanteScreen extends StatefulWidget {
 }
 
 class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
+  final _imageProviderService = ImageProviderService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,6 +70,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                   widget.gestante.maternidade = gestanteAtualizada.maternidade;
                   widget.gestante.classificacaoRisco = gestanteAtualizada.classificacaoRisco;
                   widget.gestante.fotoPath = gestanteAtualizada.fotoPath;
+                  widget.gestante.ficha = gestanteAtualizada.ficha;
                   // Outros campos como ficha, valorContrato, pagamentos, contratoEntregue
                   // são mantidos, pois a tela de edição não os altera diretamente.
                 });
@@ -386,22 +386,9 @@ void _exibirDialogoAdicionarItem(CartaoFicha cartao) {
   );
 }
 
-    ImageProvider? _buildImageProvider(String path) {
-    if (path.startsWith('data:image')) {
-      // Data URI — extrair o base64 após a vírgula
-      final base64Str = path.split(',').last;
-      return MemoryImage(base64Decode(base64Str));
-    } else if (path.startsWith('base64:')) {
-      return MemoryImage(base64Decode(path.substring(7)));
-    } else if (path.startsWith('http')) {
-      return NetworkImage(path);
-    } else {
-      // Caminho local (só funciona em mobile)
-      return FileImage(File(path));
-    }
+  //Converter imagem para o database
+  ImageProvider? _buildImageProvider(String path) {
+    return _imageProviderService.buildImageProvider(path);
+  }
 
 }
-
-
-}
-

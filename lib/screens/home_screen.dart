@@ -1,13 +1,10 @@
-import 'dart:io'; // Import necessário para lidar com as fotos
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gestante.dart';
 import 'cadastro_screen.dart';
 import 'detalhes_screen.dart';
 import '../services/database_helper.dart';
-import 'dart:convert';
-
-
+import '../services/image_convert_database.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<Gestante> gestantes;
@@ -24,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final TextEditingController _buscaController = TextEditingController();
   List<Gestante> _gestantesFiltradas = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  final _imageProviderService = ImageProviderService();
 
   @override
   void initState() {
@@ -249,18 +247,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-    ImageProvider? _buildImageProvider(String path) {
-    if (path.startsWith('data:image')) {
-      // Data URI — extrair o base64 após a vírgula
-      final base64Str = path.split(',').last;
-      return MemoryImage(base64Decode(base64Str));
-    } else if (path.startsWith('base64:')) {
-      return MemoryImage(base64Decode(path.substring(7)));
-    } else if (path.startsWith('http')) {
-      return NetworkImage(path);
-    } else {
-      // Caminho local (só funciona em mobile)
-      return FileImage(File(path));
-    }
+  //Converter imagem para o database
+  ImageProvider? _buildImageProvider(String path) {
+    return _imageProviderService.buildImageProvider(path);
   }
+
 }

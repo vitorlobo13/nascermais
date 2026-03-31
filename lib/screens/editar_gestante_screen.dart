@@ -1,14 +1,10 @@
+import '../models/gestante.dart';
+import '../services/image_convert_database.dart';
+import '../services/image_escolher.dart';
+import '../services/calculo_dum.dart';
+import '../services/calculo_ultra.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import '../models/gestante.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'dart:typed_data';
-import 'dart:convert';
-
-
 
 class EditarGestanteScreen extends StatefulWidget {
   final Gestante gestante;
@@ -22,11 +18,13 @@ class EditarGestanteScreen extends StatefulWidget {
 class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
   late TextEditingController _nomeController;
   late TextEditingController _maternidadeController;
+  final _imageEscolher = ImageEscolher();
+  final _imageProviderService = ImageProviderService();
   DateTime? _dum;
   DateTime? _dataUltra;
   int _semanasUltra = 0;
   int _diasUltra = 0;
-  DateTime? _dppDireta; // Nova variável para DPP direta
+  DateTime? _dppDireta; 
   DateTime? _dppFinal;
   late String _classificacaoRisco;
   String? _fotoPath;
@@ -52,68 +50,16 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
     super.dispose();
   }
 
-  Future<void> _escolherFoto() async {
-    final ImagePicker picker = ImagePicker();
-    
-    // 1. Seleciona a imagem da galeria
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      // 2. Abre o editor de corte (Crop)
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: image.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Mantém o quadrado perfeito
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Ajustar Foto',
-            toolbarColor: Colors.pink,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true, // Trava a proporção em 1:1
-          ),
-          IOSUiSettings(
-            title: 'Ajustar Foto',
-            aspectRatioLockEnabled: true,
-          ),
-        ],
-      );
-
-        if (croppedFile != null) {
-              if (kIsWeb) {
-                // CONVERSÃO PARA BASE64 NO WEB
-                final bytes = await croppedFile.readAsBytes(); //
-                final base64Image = base64Encode(bytes); //
-                setState(() => _fotoPath = 'base64:$base64Image');
-              } else {
-                setState(() => _fotoPath = croppedFile.path);
-              }
-            }
-          }
-        }
-
-  void _calcularDPP() {
-    setState(() {
-      if (_dppDireta != null) {
-        _dppFinal = _dppDireta;
-      } else if (_dataUltra != null) {
-        int totalDiasUltra = (_semanasUltra * 7) + _diasUltra;
-        int diasAte40Semanas = 280 - totalDiasUltra;
-        _dppFinal = _dataUltra!.add(Duration(days: diasAte40Semanas));
-      } else if (_dum != null) {
-        _dppFinal = _dum!.add(const Duration(days: 280));
-      } else {
-        _dppFinal = null;
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //TEXTO E CABEÇALHO TOPO DA TELA
       appBar: AppBar(
         title: const Text('Editar Gestante'),
         backgroundColor: Colors.pink.shade100,
       ),
+      
+      //CORPO DA TELA DE EDIÇÃO
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -140,42 +86,51 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
                 ),
               ),
             ),
+
+            //TEXTO E NOME DA GESTANTE
             const SizedBox(height: 24),
             TextField(
               controller: _nomeController,
               decoration: const InputDecoration(labelText: 'Nome da Gestante', border: OutlineInputBorder()),
             ),
+
+            //TEXTO E NOME DA MATERNIDADE
             const SizedBox(height: 16),
             TextField(
               controller: _maternidadeController,
               decoration: const InputDecoration(labelText: 'Maternidade / Hospital', border: OutlineInputBorder()),
             ),
+
+            //TEXTO E CABEÇALHO DO CADASTRO DO CÁLCULO
             const SizedBox(height: 24),
             const Text('Cálculo da DPP', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            
+            // CADASTRO DA ÚLTIMA MENSTRUAÇÃO
             const SizedBox(height: 8),
-            ListTile(
-              tileColor: Colors.grey.shade100,
-              title: Text(_dum == null ? 'Data da Última Menstruação (DUM)' : 'DUM: ${DateFormat('dd/MM/yyyy').format(_dum!)}'),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () async {
-                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now());
-                if (picked != null) {
-                  setState(() {
-                    _dum = picked;
-                    _dataUltra = null;
-                    _calcularDPP();
-                  });
-                }
+            CampoDataDUM(
+              dataSelecionada: _dum,
+              corFundo: Colors.grey.shade100,
+              labelPadrao: 'Data da Última Menstruação (DUM)',
+              prefixoTexto: 'DUM: ',
+              onDataSelecionada: (novaData) {
+                setState(() {
+                  _dum = novaData;
+                  _dataUltra = null;
+                  _calcularDPP();
+                });
               },
             ),
+            
+            //TEXTO DO OU
             const Center(child: Text('OU', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
-            // DPP DIRETA
+
+            //CADASTRO DA DPP DIRETA
             ListTile(
               tileColor: Colors.grey.shade100,
               title: Text(_dppDireta == null ? 'Data Provável do Parto (DPP) Direta' : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
-                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now().add(const Duration(days: 280))); // DPP pode ser no futuro
+                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now().add(const Duration(days: 280)));
                 if (picked != null) {
                   setState(() {
                     _dppDireta = picked;
@@ -188,56 +143,37 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
                 }
               },
             ),
+
+            //TEXTO DO OU
+            const Center(child: Text('OU', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))), 
             
-            const Center(child: Text('OU', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold))),
-            
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Column(
-                children: [
-                  ListTile(
-                    title: Text(_dataUltra == null ? 'Data da Ultrassonografia' : 'Data da Ultra: ${DateFormat('dd/MM/yyyy').format(_dataUltra!)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () async {
-                      final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now());
-                      if (picked != null) {
-                        setState(() {
-                          _dataUltra = picked;
-                          _dum = null;
-                          _calcularDPP();
-                        });
-                      }
-                    },
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Semanas'),
-                          onChanged: (val) {
-                            _semanasUltra = int.tryParse(val) ?? 0;
-                            _calcularDPP();
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Dias'),
-                          onChanged: (val) {
-                            _diasUltra = int.tryParse(val) ?? 0;
-                            _calcularDPP();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            //CADASTRO DA ULTRASSONOGRAFIA
+            CampoCadastroUltra(
+              dataUltra: _dataUltra,
+              corFundo: Colors.blue.shade50, 
+              labelData: 'Data da Ultrassonografia',
+              onDataSelecionada: (novaData) {
+                setState(() {
+                  _dataUltra = novaData;
+                  _dum = null; // Limpa DUM ao selecionar Ultra
+                  _calcularDPP();
+                });
+              },
+              onSemanasChanged: (val) {
+                setState(() {
+                  _semanasUltra = int.tryParse(val) ?? 0;
+                  _calcularDPP();
+                });
+              },
+              onDiasChanged: (val) {
+                setState(() {
+                  _diasUltra = int.tryParse(val) ?? 0;
+                  _calcularDPP();
+                });
+              },
             ),
+
+            //DPP FINAL CALCULADA
             const SizedBox(height: 16),
             if (_dppFinal != null)
               Container(
@@ -247,6 +183,8 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
                 child: Text('DPP FINAL: ${DateFormat('dd/MM/yyyy').format(_dppFinal!)}',
                   textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               ),
+
+            //CLASSIFICAÇAO DE RISCO
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _classificacaoRisco,
@@ -254,6 +192,9 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
               items: ['Risco Habitual', 'Alto Risco'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
               onChanged: (val) => setState(() => _classificacaoRisco = val!),
             ),
+
+
+            //BOTÃO PARA SALVAR A EDIÇÃO
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -261,18 +202,44 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_nomeController.text.isNotEmpty && _dppFinal != null) {
-                    final gestanteAtualizada = Gestante(
-                      nome: _nomeController.text,
-                      dppFinal: _dppFinal!,
-                      maternidade: _maternidadeController.text,
-                      classificacaoRisco: _classificacaoRisco,
-                      fotoPath: _fotoPath,
-                      ficha: widget.gestante.ficha, // Manter a ficha existente
-                      valorContrato: widget.gestante.valorContrato, // Manter valor do contrato
-                      pagamentos: widget.gestante.pagamentos, // Manter pagamentos
-                      contratoEntregue: widget.gestante.contratoEntregue, // Manter status do contrato
-                    );
-                    Navigator.pop(context, gestanteAtualizada);
+                  // 1. Criar a nova lista de fichas mapeando a existente
+                      List<CartaoFicha> fichaAtualizada = widget.gestante.ficha.map((cartao) {
+                        String tituloMinusculo = cartao.titulo.toLowerCase();
+
+                        // Se for o cartão da DPP
+                        if (tituloMinusculo.contains('dpp')) {
+                          cartao.titulo = 'Dpp ${DateFormat('dd/MM/yyyy').format(_dppFinal!)}';
+                        } 
+                        // Se for o cartão da Maternidade
+                        else if (tituloMinusculo.contains('maternidade')) {
+                          cartao.titulo = 'Maternidade: ${_maternidadeController.text}';
+                        } 
+                        // Se for o cartão do Risco
+                        else if (tituloMinusculo.contains('risco')) {
+                          cartao.titulo = 'Risco: $_classificacaoRisco';
+                        }
+
+                        // Retornamos o mesmo objeto 'cartao', mas com o título alterado
+                        // Isso preserva a lista 'subtopicos' e o status 'concluido'
+                        return cartao; 
+                      }).toList();
+
+                      // 2. Criar o objeto gestante atualizada
+                      final gestanteAtualizada = Gestante(
+                        id: widget.gestante.id,
+                        nome: _nomeController.text,
+                        dppFinal: _dppFinal!,
+                        maternidade: _maternidadeController.text,
+                        classificacaoRisco: _classificacaoRisco,
+                        fotoPath: _fotoPath,
+                        ficha: fichaAtualizada, 
+                        valorContrato: widget.gestante.valorContrato,
+                        pagamentos: widget.gestante.pagamentos,
+                        contratoEntregue: widget.gestante.contratoEntregue,
+                      );
+
+                      // 3. Voltar para a tela anterior passando o objeto novo
+                      Navigator.pop(context, gestanteAtualizada);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha o nome e calcule a DPP')));
                   }
@@ -287,19 +254,37 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
     );
   }
 
-  ImageProvider? _buildImageProvider(String path) {
-  if (path.startsWith('data:image')) {
-    // Data URI — extrair o base64 após a vírgula
-    final base64Str = path.split(',').last;
-    return MemoryImage(base64Decode(base64Str));
-  } else if (path.startsWith('base64:')) {
-    return MemoryImage(base64Decode(path.substring(7)));
-  } else if (path.startsWith('http')) {
-    return NetworkImage(path);
-  } else {
-    // Caminho local (só funciona em mobile)
-    return FileImage(File(path));
+
+  // Função para selecionar a foto
+  Future<void> _escolherFoto() async {
+    final fotoPath = await _imageEscolher.escolherFoto(context);
+    if (fotoPath != null) {
+      setState(() {
+        _fotoPath = fotoPath;
+      });
+    }
   }
+
+  //CALCULAR DPP
+  void _calcularDPP() {
+    setState(() {
+	  if (_dppDireta != null) {
+        _dppFinal = _dppDireta;
+      } else if (_dataUltra != null) {
+        int totalDiasUltra = (_semanasUltra * 7) + _diasUltra;
+        int diasAte40Semanas = 280 - totalDiasUltra;
+        _dppFinal = _dataUltra!.add(Duration(days: diasAte40Semanas));
+      } else if (_dum != null) {
+        _dppFinal = _dum!.add(const Duration(days: 280));
+	  } else {
+        _dppFinal = null;							 
+      }
+    });
+  }
+
+  //Converter imagem para o database
+  ImageProvider? _buildImageProvider(String path) {
+    return _imageProviderService.buildImageProvider(path);
   }
 
 }

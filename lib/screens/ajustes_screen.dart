@@ -50,7 +50,7 @@ class AjustesScreen extends StatelessWidget {
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Text('Versão 2.0.1', style: TextStyle(color: Colors.grey)),
+                Text('Versão 2.0.2', style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',
@@ -83,7 +83,7 @@ class AjustesScreen extends StatelessWidget {
           ),
           _buildGuiaItem(Icons.people, 'Gestantes', 'Cadastre suas clientes e use os cartões para registrar acompanhamentos e informações do pré-natal. Dentro do cartão você pode registrar subtópicos, por exemplo, registrar medicamentos.'),
           _buildGuiaItem(Icons.content_copy, 'Copiar Cartão', 'Economize tempo copiando a estrutura de tópicos e anotações de outra gestante já cadastrada para uma nova ficha.'),
-          _buildGuiaItem(Icons.archive, 'Arquivar', 'Ao finalizar um acompanhamento, você pode arquivar a gestante. Ela sairá da lista principal, mas os dados continuarão salvos na aba "Arquivadas".'),        
+          _buildGuiaItem(Icons.archive, 'Arquivar', 'Ao finalizar um acompanhamento, você pode arquivar a gestante. Ela sairá da lista principal, mas os dados continuarão salvos na aba "Arquivadas".'),
           _buildGuiaItem(Icons.attach_money, 'Financeiro', 'Defina o valor do contrato e registre cada pagamento recebido para ter controle total.'),
           _buildGuiaItem(Icons.search, 'Busca', 'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.'),
           _buildGuiaItem(Icons.delete_sweep, 'Excluir', 'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.'),
@@ -123,8 +123,6 @@ class AjustesScreen extends StatelessWidget {
     );
   }
 }
-
-
 
 
 
