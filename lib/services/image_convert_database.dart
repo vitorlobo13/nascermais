@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:convert';
 
+
+//SERVE PARA LER A IMAGEM TRAZENDO DO BANCO DE DADOS
 class ImageProviderService {
   ImageProvider? buildImageProvider(String path) {
     if (path.startsWith('data:image')) {
