@@ -52,6 +52,7 @@ class Gestante {
   List<Pagamento> pagamentos;
   bool contratoEntregue;
   bool arquivada;
+  bool jaNasceu;
 
   Gestante({
     this.id,
@@ -65,13 +66,14 @@ class Gestante {
     List<CartaoFicha>? ficha,
     List<Pagamento>? pagamentos,
     this.arquivada = false,
+    this.jaNasceu = false,
   }) : ficha = ficha ?? [], pagamentos = pagamentos ?? [];
 
-  // Getters para lógica de negócio
+  // Getters para lógica de negócio sobre pós-parto
   String get semanasHoje {
+    if (jaNasceu) return 'Pós-parto';
     final hoje = DateTime.now();
     final diferenca = dppFinal.difference(hoje).inDays;
-    if (diferenca < 0) return 'Pós-parto';
     final semanas = (280 - diferenca) ~/ 7;
     final dias = (280 - diferenca) % 7;
     return '$semanas semanas e $dias dias';
@@ -95,6 +97,7 @@ class Gestante {
       'pagamentos': jsonEncode(pagamentos.map((p) => p.toJson()).toList()),
       'contratoEntregue': contratoEntregue ? 1 : 0,
       'arquivada': arquivada ? 1 : 0,
+      'jaNasceu': jaNasceu ? 1 : 0,
     };
   }
 
@@ -111,6 +114,7 @@ class Gestante {
       pagamentos: (jsonDecode(map['pagamentos']) as List).map((p) => Pagamento.fromJson(p)).toList(),
       contratoEntregue: map['contratoEntregue'] == 1,
       arquivada: map['arquivada'] == 1,
+      jaNasceu: map['jaNasceu'] == 1,
     );
   }
 }
