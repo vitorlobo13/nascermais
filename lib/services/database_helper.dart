@@ -38,8 +38,9 @@ class DatabaseHelper {
     return await dbFactory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 1,
+        version: 2,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
       ),
     );
   }
@@ -57,9 +58,19 @@ class DatabaseHelper {
         valorContrato REAL,
         pagamentos TEXT, 
         contratoEntregue INTEGER,
-        arquivada INTEGER DEFAULT 0 -- NOVA COLUNA: 0 = Ativa, 1 = Arquivada
+        arquivada INTEGER DEFAULT 0, -- NOVA COLUNA: 0 = Ativa, 1 = Arquivada
+        jaNasceu INTEGER DEFAULT 0
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE gestantes ADD COLUMN jaNasceu INTEGER DEFAULT 0'
+      );
+      print("Database upgraded to version 2: Column 'jaNasceu' added.");
+    }
   }
 
   // Operações CRUD
