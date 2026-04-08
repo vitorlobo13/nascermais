@@ -33,15 +33,18 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
+  
 
 # Configuração dos Ícones do App
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "web/Nascermaisicon.PNG"
+  image_path: "assets/images/nascermaisicon.png"
 
 flutter:
   uses-material-design: true
+  assets:
+     - assets/images/
 
   # Caso precise adicionar imagens fixas no futuro, use a seção assets abaixo:
   # assets:
