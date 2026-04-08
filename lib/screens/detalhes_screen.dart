@@ -1,9 +1,11 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import '../models/gestante.dart';
 import '../services/image_convert_database.dart';
 import '../services/arquiva_gestante.dart';
 import '../services/edita_gestante.dart';
 import '../services/ficha_service.dart';
+import '../services/gerencia_parto.dart';
 
 
 class DetalhesGestanteScreen extends StatefulWidget {
@@ -33,6 +35,21 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
         title: Text(widget.gestante.nome),
         backgroundColor: Colors.pink.shade100,
         actions: [
+          // BOTÃO PARA MARCAR PARTO - PÓS-PARTO
+          IconButton(
+            icon: Icon(
+              widget.gestante.jaNasceu ? Icons.pregnant_woman : Icons.child_friendly,
+              size: 35.0
+            ),
+            tooltip: widget.gestante.jaNasceu ? 'Status: Pós-parto' : 'Marcar nascimento',
+            onPressed: () => GerenciaParto.executar(
+              context: context,
+              gestante: widget.gestante,
+              setState: setState,
+              mounted: mounted,
+            ),
+          ),
+
           // BOTÃO PARA IMPORTAR CARTÕES DE OUTRA GESTANTE
           IconButton(
             icon: const Icon(Icons.content_copy),

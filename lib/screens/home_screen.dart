@@ -85,7 +85,27 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ],
         ),
       ),
-      body: Column(
+      body:
+      Stack(
+      children: [
+        // Camada 1: A Logo de fundo como marca d'água suave
+        Center(
+          child: Opacity(
+          opacity: 0.1, 
+          child: Image.asset(
+            'assets/images/nascermaisicon.png',
+            
+            //color: Colors.pink.shade200, 
+            colorBlendMode: BlendMode.srcIn,
+            width: MediaQuery.of(context).size.width * 0.8,
+            fit: BoxFit.contain,
+          ),
+        ),
+        ), 
+
+
+      //CAMADA 2 - CONTEÚDO
+      Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12.0),
@@ -226,6 +246,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
           ),
         ],
+      ),
+     ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
