@@ -38,15 +38,12 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
   /// Centraliza a atualização da UI e das notificações
   Future<void> _sincronizarDados() async {
     setState(() {}); 
-    await _notificationService.atualizarLembrete(widget.gestante);
+    _notificationService.atualizarLembrete(widget.gestante);
     
     // SALVAR NO BANCO DE DADOS
     if (widget.gestante.id != null) {
       final db = DatabaseHelper();
       await db.updateGestante(widget.gestante);
-    } else {
-      // Log explícito: nunca deve acontecer, mas se acontecer é fácil de rastrear
-      debugPrint('[DetalhesPagamento] AVISO: gestante sem id, dados não salvos no banco!');
     }
   }
 
