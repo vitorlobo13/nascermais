@@ -71,38 +71,41 @@ class _MainNavigationState extends State<MainNavigation> {
       await _carregarDados();
     }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> telas = [
-      HomeScreen(
-        gestantes: listaGestantes,
-        onSave: _salvarDados,
-        onRefresh: _carregarDados,
-      ),
-      FinanceiroScreen(
-        gestantes: listaGestantes,
-        onSave: _salvarDados,
-        onRefresh: _carregarDados,
-      ),
-      const AjustesScreen(),
-    ];
-
-    return Scaffold(
-      body: telas[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) async {
-          await _carregarDados();
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Gestantes'),
-          BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Financeiro'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
-        ],
-      ),
-    );
-  }
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        //IndexedStack mantém os widgets vivos e apenas oculta/exibe
+        //Não recria os widgets a cada mudança de aba
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            HomeScreen(
+              gestantes: listaGestantes,
+              onSave: _salvarDados,
+              onRefresh: _carregarDados,
+            ),
+            FinanceiroScreen(
+              gestantes: listaGestantes,
+              onSave: _salvarDados,
+              onRefresh: _carregarDados,
+            ),
+            const AjustesScreen(),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) async {
+            await _carregarDados();
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Gestantes'),
+            BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Financeiro'),
+            BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+          ],
+        ),
+      );
+    }
 }
