@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/gestante.dart';
 import 'detalhes_pagamento_screen.dart';
+import '../services/database_helper.dart';
+
 
 class FinanceiroScreen extends StatefulWidget {
   final List<Gestante> gestantes;
@@ -80,9 +82,16 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => DetalhesPagamentoScreen(gestante: g)),
-                          ).then((_) {
+                          ).then((_) async {
                             setState(() {}); // Atualiza a lista ao voltar
-                            widget.onSave(widget.gestantes); // Salva as alterações
+                            
+                            // ✅ SALVAR TODAS AS GESTANTES NO BANCO
+                            final db = DatabaseHelper();
+                            for (var gestante in widget.gestantes) {
+                              if (gestante.id != null) {
+                                await db.updateGestante(gestante);
+                              }
+                            }
                           }),
                         ),
                       );
