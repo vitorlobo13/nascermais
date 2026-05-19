@@ -76,6 +76,9 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                               if (g.valorContrato > 0)
                                 Text('Pago: R\$ ${g.totalPago.toStringAsFixed(2)} de R\$ ${g.valorContrato.toStringAsFixed(2)}',
                                     style: const TextStyle(fontSize: 13)),
+                              if (g.valorContrato > 0)
+                                Text('Dia do vencimento: ${g.diaVencimento}',
+                                    style: const TextStyle(fontSize: 13)),
                             ],
                           ),
                           trailing: const Icon(Icons.chevron_right),
