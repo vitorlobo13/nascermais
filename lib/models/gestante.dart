@@ -49,6 +49,7 @@ class Gestante {
   String? fotoPath;
   List<CartaoFicha> ficha;
   double valorContrato;
+  int? diaVencimento;
   List<Pagamento> pagamentos;
   bool contratoEntregue;
   bool arquivada;
@@ -62,6 +63,7 @@ class Gestante {
     required this.classificacaoRisco,
     this.fotoPath,
     this.valorContrato = 0.0,
+    this.diaVencimento,
     this.contratoEntregue = false,
     List<CartaoFicha>? ficha,
     List<Pagamento>? pagamentos,
@@ -94,6 +96,7 @@ class Gestante {
       'fotoPath': fotoPath,
       'ficha': jsonEncode(ficha.map((f) => f.toJson()).toList()),
       'valorContrato': valorContrato,
+      'diaVencimento': diaVencimento,
       'pagamentos': jsonEncode(pagamentos.map((p) => p.toJson()).toList()),
       'contratoEntregue': contratoEntregue ? 1 : 0,
       'arquivada': arquivada ? 1 : 0,
@@ -111,6 +114,7 @@ class Gestante {
       fotoPath: map['fotoPath'],
       ficha: (jsonDecode(map['ficha']) as List).map((f) => CartaoFicha.fromJson(f)).toList(),
       valorContrato: (map['valorContrato'] as num).toDouble(),
+      diaVencimento: map['diaVencimento'],
       pagamentos: (jsonDecode(map['pagamentos']) as List).map((p) => Pagamento.fromJson(p)).toList(),
       contratoEntregue: map['contratoEntregue'] == 1,
       arquivada: map['arquivada'] == 1,
