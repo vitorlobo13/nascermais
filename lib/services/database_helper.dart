@@ -56,6 +56,7 @@ class DatabaseHelper {
         fotoPath TEXT,
         ficha TEXT, 
         valorContrato REAL,
+        diaVencimento INTEGER,
         pagamentos TEXT, 
         contratoEntregue INTEGER,
         arquivada INTEGER DEFAULT 0, -- NOVA COLUNA: 0 = Ativa, 1 = Arquivada
@@ -67,9 +68,9 @@ class DatabaseHelper {
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute(
-        'ALTER TABLE gestantes ADD COLUMN jaNasceu INTEGER DEFAULT 0'
+        'ALTER TABLE gestantes ADD COLUMN diaVencimento INTEGER DEFAULT 5'
       );
-      print("Database upgraded to version 2: Column 'jaNasceu' added.");
+      print("Database upgraded to version 3: Column 'diaVencimento' added.");
     }
   }
 
