@@ -23,10 +23,14 @@ dependencies:
 
   # Câmera e Galeria de Fotos
   image_picker: ^1.1.0          # Selecionar foto
-  image_cropper: ^11.0.0        # Editar/Cortar foto
+  image_cropper: ^12.2.1        # Editar/Cortar foto
 
   # Comunicação e Links
   url_launcher: ^6.2.5          # Abrir e-mail/links externos
+
+  # Notificação local
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0 # Necessário para agendamentos precisos
 
 dev_dependencies:
   flutter_test:
