@@ -5,10 +5,13 @@ import 'screens/ajustes_screen.dart';
 import 'models/gestante.dart';
 import 'services/database_helper.dart'; // Import do nosso novo serviço
 
-void main() {
+
+
+void main(){
   // Garante que os plugins (como o SQLite) sejam inicializados antes do app rodar
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const NascerMais());
+  
 }
 
 class NascerMais extends StatelessWidget {
@@ -54,15 +57,19 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  // Função para salvar (Insert ou Update)
-  Future<void> _salvarDados(List<Gestante> gestantes) async {
-    // Como agora o banco gerencia cada item individualmente, 
-    // esta função no main.dart servirá apenas para atualizar a UI local.
-    // O salvamento real será feito nas telas de Cadastro e Edição.
-    setState(() {
-      listaGestantes = gestantes;
-    });
-  }
+    // CORRIGIDO: agora realmente persiste cada gestante no banco
+    Future<void> _salvarDados(List<Gestante> gestantes) async {
+      for (final g in gestantes) {
+        if (g.id != null) {
+          await _dbHelper.updateGestante(g);
+        } else {
+          final novoId = await _dbHelper.insertGestante(g);
+          g.id = novoId;
+        }
+      }
+      // Após salvar, recarrega do banco para garantir consistência
+      await _carregarDados();
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -70,10 +77,12 @@ class _MainNavigationState extends State<MainNavigation> {
       HomeScreen(
         gestantes: listaGestantes,
         onSave: _salvarDados,
+        onRefresh: _carregarDados,
       ),
       FinanceiroScreen(
         gestantes: listaGestantes,
         onSave: _salvarDados,
+        onRefresh: _carregarDados,
       ),
       const AjustesScreen(),
     ];
@@ -82,7 +91,8 @@ class _MainNavigationState extends State<MainNavigation> {
       body: telas[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          await _carregarDados();
           setState(() {
             _selectedIndex = index;
           });
