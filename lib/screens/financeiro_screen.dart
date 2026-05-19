@@ -7,8 +7,9 @@ import '../services/database_helper.dart';
 class FinanceiroScreen extends StatefulWidget {
   final List<Gestante> gestantes;
   final Function(List<Gestante>) onSave;
+  final Future<void> Function() onRefresh;
 
-  const FinanceiroScreen({super.key, required this.gestantes, required this.onSave});
+  const FinanceiroScreen({super.key, required this.gestantes, required this.onSave,required this.onRefresh,});
 
   @override
   State<FinanceiroScreen> createState() => _FinanceiroScreenState();
@@ -79,20 +80,18 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                             ],
                           ),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DetalhesPagamentoScreen(gestante: g)),
-                          ).then((_) async {
-                            setState(() {}); // Atualiza a lista ao voltar
-                            
-                            // ✅ SALVAR TODAS AS GESTANTES NO BANCO
-                            final db = DatabaseHelper();
-                            for (var gestante in widget.gestantes) {
-                              if (gestante.id != null) {
-                                await db.updateGestante(gestante);
-                              }
-                            }
-                          }),
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetalhesPagamentoScreen(gestante: g),
+                              ),
+                            );
+                            // Pede ao pai (MainNavigation) para reler o banco
+                            await widget.onRefresh();
+                            // Agora sim atualiza a UI com os dados frescos
+                            setState(() {});
+                          },
                         ),
                       );
                     },
@@ -102,7 +101,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
       ),
     );
   }
-
+  
   Widget _resumoItem(String label, double valor, Color cor, {bool isCount = false}) {
     return Column(
       children: [

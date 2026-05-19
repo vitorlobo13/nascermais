@@ -9,8 +9,9 @@ import '../services/image_convert_database.dart';
 class HomeScreen extends StatefulWidget {
   final List<Gestante> gestantes;
   final Function(List<Gestante>) onSave;
+  final Future<void> Function() onRefresh;
 
-  const HomeScreen({super.key, required this.gestantes, required this.onSave});
+  const HomeScreen({super.key, required this.gestantes, required this.onSave, required this.onRefresh});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -227,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
                               trailing: Icon(Icons.chevron_right, color: isArquivada ? Colors.grey.shade300 : Colors.pink.shade200),
                               onTap: () async {
-                                final result = await Navigator.push(
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetalhesGestanteScreen(
@@ -236,6 +237,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     )
                                   ),
                                 );
+                                // Recarrega do banco antes de filtrar
+                                await widget.onRefresh();
                                 _filtrarGestantes(_buscaController.text);
                               },
                             ),
