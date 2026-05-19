@@ -3,16 +3,20 @@ import 'screens/home_screen.dart';
 import 'screens/financeiro_screen.dart';
 import 'screens/ajustes_screen.dart';
 import 'models/gestante.dart';
-import 'services/database_helper.dart';
- 
-void main() {
+import 'services/database_helper.dart'; // Import do nosso novo serviço
+
+
+
+void main(){
+  // Garante que os plugins (como o SQLite) sejam inicializados antes do app rodar
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const NascerMais());
+  
 }
- 
+
 class NascerMais extends StatelessWidget {
   const NascerMais({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,74 +30,65 @@ class NascerMais extends StatelessWidget {
     );
   }
 }
- 
+
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
- 
+
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
- 
+
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
-  final DatabaseHelper _dbHelper = DatabaseHelper();
- 
-  // ValueNotifier: dispara rebuild reativo em todos os filhos que o escutam
-  final ValueNotifier<List<Gestante>> gestantesNotifier = ValueNotifier([]);
- 
+  List<Gestante> listaGestantes = [];
+  final DatabaseHelper _dbHelper = DatabaseHelper(); // Instância do banco
+
   @override
   void initState() {
     super.initState();
     _carregarDados();
   }
- 
-  @override
-  void dispose() {
-    gestantesNotifier.dispose();
-    super.dispose();
-  }
- 
+
+  // Carrega os dados do SQLite em vez do SharedPreferences
   Future<void> _carregarDados() async {
     final dados = await _dbHelper.getGestantes();
-    // Atribuir ao notifier já dispara o rebuild nos filhos automaticamente
-    gestantesNotifier.value = dados;
+    setState(() {
+      listaGestantes = dados;
+    });
   }
- 
+
+  // Função para salvar (Insert ou Update)
   Future<void> _salvarDados(List<Gestante> gestantes) async {
-    for (final g in gestantes) {
-      if (g.id != null) {
-        await _dbHelper.updateGestante(g);
-      } else {
-        final novoId = await _dbHelper.insertGestante(g);
-        g.id = novoId;
-      }
-    }
-    await _carregarDados();
+    // Como agora o banco gerencia cada item individualmente, 
+    // esta função no main.dart servirá apenas para atualizar a UI local.
+    // O salvamento real será feito nas telas de Cadastro e Edição.
+    setState(() {
+      listaGestantes = gestantes;
+    });
   }
- 
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          HomeScreen(
-            gestantesNotifier: gestantesNotifier,
-            onSave: _salvarDados,
-            onRefresh: _carregarDados,
-          ),
-          FinanceiroScreen(
-            gestantesNotifier: gestantesNotifier,
-            onRefresh: _carregarDados,
-          ),
-          const AjustesScreen(),
-        ],
+    final List<Widget> telas = [
+      HomeScreen(
+        gestantes: listaGestantes,
+        onSave: _salvarDados,
       ),
+      FinanceiroScreen(
+        gestantes: listaGestantes,
+        onSave: _salvarDados,
+      ),
+      const AjustesScreen(),
+    ];
+
+    return Scaffold(
+      body: telas[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) async {
-          await _carregarDados();
-          setState(() => _selectedIndex = index);
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Gestantes'),
