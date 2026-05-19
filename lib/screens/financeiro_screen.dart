@@ -90,7 +90,11 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                             // Pede ao pai (MainNavigation) para reler o banco
                             await widget.onRefresh();
                             // Agora sim atualiza a UI com os dados frescos
-                            setState(() {});
+                            if (mounted) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                setState(() {});
+                              });
+                            }
                           },
                         ),
                       );
