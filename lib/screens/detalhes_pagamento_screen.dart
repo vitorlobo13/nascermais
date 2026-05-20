@@ -143,7 +143,7 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
                 Expanded(
                   child: TextField(
                     controller: _valorPagamentoController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(
                       hintText: 'Valor R\$', 
                       border: OutlineInputBorder()
@@ -154,7 +154,8 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
                   onPressed: () async {
-                    double? v = double.tryParse(_valorPagamentoController.text);
+                    String textoFormatado = _valorPagamentoController.text.replaceAll(',', '.');
+                    double? v = double.tryParse(textoFormatado);
                     if (v != null && v > 0) {
                       g.pagamentos.add(Pagamento(
                         valor: v, 
