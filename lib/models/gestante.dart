@@ -75,7 +75,9 @@ class Gestante {
   String get semanasHoje {
     if (jaNasceu) return 'Pós-parto';
     final hoje = DateTime.now();
-    final diferenca = dppFinal.difference(hoje).inDays;
+    final hojeMeiaNoite = DateTime(hoje.year, hoje.month, hoje.day);
+    final dppMeiaNoite = DateTime(dppFinal.year, dppFinal.month, dppFinal.day);
+    final diferenca = dppMeiaNoite.difference(hojeMeiaNoite).inDays;
     final semanas = (280 - diferenca) ~/ 7;
     final dias = (280 - diferenca) % 7;
     return '$semanas semanas e $dias dias';
