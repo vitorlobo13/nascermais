@@ -16,8 +16,18 @@ class NotificationService {
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(),
     );
-    // CORREÇÃO 1: Adicionado o nome do parâmetro 'settings'
     await _notifications.initialize(settings: settings);
+  }
+
+  /// Solicita permissões de notificação para Android 13+ e iOS
+  Future<bool> solicitarPermissoes() async {
+    final bool? androidGranted = await _notifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    final bool? iosGranted = await _notifications
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+    return (androidGranted ?? false) || (iosGranted ?? false);
   }
 
   /// O "Cérebro" da notificação: decide se agenda ou cancela

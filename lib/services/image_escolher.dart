@@ -8,7 +8,12 @@ class ImageEscolher {
   // Função para selecionar a foto
   Future<String?> escolherFoto(BuildContext context) async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
     
     if (image != null) {
       // 2. Abre o editor de corte (Crop)
