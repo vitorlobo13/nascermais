@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/gestante.dart';
 import 'detalhes_pagamento_screen.dart';
-import '../services/database_helper.dart';
-
+import '../services/gestantes_provider.dart';
 
 class FinanceiroScreen extends StatefulWidget {
-  final List<Gestante> gestantes;
-  final Function(List<Gestante>) onSave;
-
-  const FinanceiroScreen({super.key, required this.gestantes, required this.onSave});
+  const FinanceiroScreen({super.key});
 
   @override
   State<FinanceiroScreen> createState() => _FinanceiroScreenState();
@@ -17,10 +12,13 @@ class FinanceiroScreen extends StatefulWidget {
 class _FinanceiroScreenState extends State<FinanceiroScreen> {
   @override
   Widget build(BuildContext context) {
-    // Cálculos para o resumo do topo (considerando todas as gestantes)
-    double totalContratado = widget.gestantes.fold(0, (s, g) => s + g.valorContrato);
-    double totalRecebido = widget.gestantes.fold(0, (s, g) => s + g.totalPago);
-    int pendentesEntrega = widget.gestantes.where((g) => g.valorContrato > 0 && !g.contratoEntregue).length;
+    final provider = GestantesStateScope.of(context);
+    final gestantes = provider.gestantes;
+
+    // Calculos para o resumo do topo (considerando todas as gestantes)
+    double totalContratado = gestantes.fold(0, (s, g) => s + g.valorContrato);
+    double totalRecebido = gestantes.fold(0, (s, g) => s + g.totalPago);
+    int pendentesEntrega = gestantes.where((g) => g.valorContrato > 0 && !g.contratoEntregue).length;
 
     return Scaffold(
       appBar: AppBar(
@@ -43,12 +41,12 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
           ),
           // LISTA DE TODAS AS GESTANTES
           Expanded(
-            child: widget.gestantes.isEmpty
+            child: gestantes.isEmpty
                 ? const Center(child: Text('Nenhuma gestante cadastrada.\nCadastre uma gestante primeiro.', textAlign: TextAlign.center))
                 : ListView.builder(
-                    itemCount: widget.gestantes.length,
+                    itemCount: gestantes.length,
                     itemBuilder: (context, index) {
-                      final g = widget.gestantes[index];
+                      final g = gestantes[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: ListTile(
@@ -89,16 +87,9 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => DetalhesPagamentoScreen(gestante: g)),
-                          ).then((_) async {
-                            setState(() {}); // Atualiza a lista ao voltar
-                            
-                            // ✅ SALVAR TODAS AS GESTANTES NO BANCO
-                            final db = DatabaseHelper();
-                            for (var gestante in widget.gestantes) {
-                              if (gestante.id != null) {
-                                await db.updateGestante(gestante);
-                              }
-                            }
+                          ).then((_) {
+                            // Atualiza os dados a partir do banco de dados ao voltar
+                            provider.carregarGestantes();
                           }),
                         ),
                       );

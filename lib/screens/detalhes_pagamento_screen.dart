@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gestante.dart';
 import '../services/notification_service.dart';
-import '../services/database_helper.dart';
+import '../services/gestantes_provider.dart';
 
 class DetalhesPagamentoScreen extends StatefulWidget {
   final Gestante gestante;
@@ -40,11 +40,8 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
     setState(() {}); 
     _notificationService.atualizarLembrete(widget.gestante);
     
-    // SALVAR NO BANCO DE DADOS
-    if (widget.gestante.id != null) {
-      final db = DatabaseHelper();
-      await db.updateGestante(widget.gestante);
-    }
+    // SALVAR NO PROVEDOR DE ESTADO (que persiste no banco)
+    GestantesStateScope.of(context, listen: false).atualizarGestante(widget.gestante);
   }
 
   @override

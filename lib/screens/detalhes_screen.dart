@@ -5,13 +5,14 @@ import '../services/arquiva_gestante.dart';
 import '../services/edita_gestante.dart';
 import '../services/ficha_service.dart';
 import '../services/gerencia_parto.dart';
+import '../services/gestantes_provider.dart';
+import 'detalhes_dialogs.dart';
 
 
 class DetalhesGestanteScreen extends StatefulWidget {
   final Gestante gestante;
-  final List<Gestante> todasAsGestantes;
 
-  const DetalhesGestanteScreen({super.key, required this.gestante, required this.todasAsGestantes});
+  const DetalhesGestanteScreen({super.key, required this.gestante});
 
   @override
   State<DetalhesGestanteScreen> createState() => _DetalhesGestanteScreenState();
@@ -22,11 +23,16 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
   final _fichaService = FichaService();
   
   void _atualizar() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+      // Sincroniza a atualização no provedor para notificar outras telas
+      GestantesStateScope.of(context, listen: false).atualizarGestante(widget.gestante);
+    }
   }
   
   @override
   Widget build(BuildContext context) {
+    final provider = GestantesStateScope.of(context, listen: false);
     return Scaffold(
       //CABEÇALHO
       appBar: AppBar(
@@ -44,7 +50,10 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
             onPressed: () => GerenciaParto.executar(
               context: context,
               gestante: widget.gestante,
-              setState: setState,
+              setState: (fn) {
+                setState(fn);
+                provider.atualizarGestante(widget.gestante);
+              },
               mounted: mounted,
             ),
           ),
@@ -53,7 +62,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
           IconButton(
             icon: const Icon(Icons.content_copy),
             tooltip: 'Importar cartões de outra gestante',
-            onPressed: () => _fichaService.mostrarImportarFicha(context, widget.gestante, widget.todasAsGestantes, _atualizar),
+            onPressed: () => DetalhesDialogs.mostrarImportarFicha(context, widget.gestante, provider.gestantes, _atualizar),
           ),
           // BOTÃO PARA ARQUIVAR OU DESARQUIVAR GESTANTE
           IconButton(
@@ -63,7 +72,10 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
               await ArquivaGestante.executar(
                 context: context,
                 gestante: widget.gestante,
-                setState: setState,
+                setState: (fn) {
+                  setState(fn);
+                  provider.atualizarGestante(widget.gestante);
+                },
                 mounted: mounted,
               );
             },
@@ -75,7 +87,10 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
               await EditaGestante.executar(
                 context: context,
                 gestante: widget.gestante,
-                setState: setState,
+                setState: (fn) {
+                  setState(fn);
+                  provider.atualizarGestante(widget.gestante);
+                },
               );
             },
           ),
@@ -203,7 +218,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.grey),
-                            onPressed: () => _fichaService.mostrarDialogoEditarTitulo(context, widget.gestante, index, _atualizar),
+                            onPressed: () => DetalhesDialogs.mostrarDialogoEditarTitulo(context, widget.gestante, index, _atualizar),
                           ),
                         ],
                       ),
@@ -232,7 +247,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           child: TextButton.icon(
-                            onPressed: () => _fichaService.mostrarDialogoAdicionarItem(context, widget.gestante, cartao, _atualizar),
+                            onPressed: () => DetalhesDialogs.mostrarDialogoAdicionarItem(context, widget.gestante, cartao, _atualizar),
                             icon: const Icon(Icons.add, size: 18, color: Colors.blue),
                             label: const Text('Adicionar item', style: TextStyle(color: Colors.blue)),
                           ),
@@ -248,7 +263,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
       ),
       // BOTÃO + PARA ADICIONAR NOVA FICHA/CARTAO
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _fichaService.mostrarDialogoNovoCartao(context, widget.gestante, _atualizar),
+        onPressed: () => DetalhesDialogs.mostrarDialogoNovoCartao(context, widget.gestante, _atualizar),
         child: const Icon(Icons.add),
       ),
     );
