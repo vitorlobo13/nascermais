@@ -2,31 +2,50 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/financeiro_screen.dart';
 import 'screens/ajustes_screen.dart';
-import 'models/gestante.dart';
-import 'services/database_helper.dart'; // Import do nosso novo serviço
+import 'services/notification_service.dart';
+import 'services/gestantes_provider.dart';
 
-
-
-void main(){
+void main() async {
   // Garante que os plugins (como o SQLite) sejam inicializados antes do app rodar
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const NascerMais());
   
+  // Inicializa notificações locais
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.solicitarPermissoes();
+  
+  runApp(const NascerMais());
 }
 
-class NascerMais extends StatelessWidget {
+class NascerMais extends StatefulWidget {
   const NascerMais({super.key});
 
   @override
+  State<NascerMais> createState() => _NascerMaisState();
+}
+
+class _NascerMaisState extends State<NascerMais> {
+  final GestantesProvider _provider = GestantesProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _provider.carregarGestantes();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Nascer+',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
-        useMaterial3: true,
+    return GestantesStateScope(
+      notifier: _provider,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Nascer+',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
+          useMaterial3: true,
+        ),
+        home: const MainNavigation(),
       ),
-      home: const MainNavigation(),
     );
   }
 }
@@ -40,44 +59,12 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
-  List<Gestante> listaGestantes = [];
-  final DatabaseHelper _dbHelper = DatabaseHelper(); // Instância do banco
-
-  @override
-  void initState() {
-    super.initState();
-    _carregarDados();
-  }
-
-  // Carrega os dados do SQLite em vez do SharedPreferences
-  Future<void> _carregarDados() async {
-    final dados = await _dbHelper.getGestantes();
-    setState(() {
-      listaGestantes = dados;
-    });
-  }
-
-  // Função para salvar (Insert ou Update)
-  Future<void> _salvarDados(List<Gestante> gestantes) async {
-    // Como agora o banco gerencia cada item individualmente, 
-    // esta função no main.dart servirá apenas para atualizar a UI local.
-    // O salvamento real será feito nas telas de Cadastro e Edição.
-    setState(() {
-      listaGestantes = gestantes;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> telas = [
-      HomeScreen(
-        gestantes: listaGestantes,
-        onSave: _salvarDados,
-      ),
-      FinanceiroScreen(
-        gestantes: listaGestantes,
-        onSave: _salvarDados,
-      ),
+      const HomeScreen(),
+      const FinanceiroScreen(),
       const AjustesScreen(),
     ];
 
