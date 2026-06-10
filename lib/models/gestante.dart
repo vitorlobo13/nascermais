@@ -41,7 +41,7 @@ class CartaoFicha {
 }
 
 class Gestante {
-  int? id; // Chave primária
+  String? id; // Chave primária (alinhada com os IDs de texto do Firestore)
   String nome;
   DateTime dppFinal;
   String maternidade;
@@ -108,7 +108,7 @@ class Gestante {
 
   factory Gestante.fromMap(Map<String, dynamic> map) {
     return Gestante(
-      id: map['id'],
+      id: map['id']?.toString(),
       nome: map['nome'],
       dppFinal: DateTime.parse(map['dppFinal']),
       maternidade: map['maternidade'],
