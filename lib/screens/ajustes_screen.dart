@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/gestantes_provider.dart';
 
 class AjustesScreen extends StatelessWidget {
   const AjustesScreen({super.key});
@@ -50,7 +51,7 @@ class AjustesScreen extends StatelessWidget {
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Text('Versão 2.0.6', style: TextStyle(color: Colors.grey)),
+                Text('Versão 3.0.0', style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',
@@ -89,6 +90,18 @@ class AjustesScreen extends StatelessWidget {
           _buildGuiaItem(Icons.search, 'Busca', 'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.'),
           _buildGuiaItem(Icons.delete_sweep, 'Excluir', 'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.'),
           
+          if (GestantesProvider.usarFirebase) ...[
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.exit_to_app, color: Colors.red),
+              title: const Text('Sair da Conta', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              subtitle: const Text('Desconectar o usuário atual'),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () async {
+                await GestantesStateScope.of(context, listen: false).fazerLogout();
+              },
+            ),
+          ],
 
           const SizedBox(height: 40),
           const Center(

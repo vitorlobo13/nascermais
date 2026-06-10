@@ -31,6 +31,9 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = (_fotoPath != null && _fotoPath!.isNotEmpty)
+        ? _buildImageProvider(_fotoPath!)
+        : null;
     return Scaffold(
       //TEXTO E CABEÇALHO TOPO DA TELA
       appBar: AppBar(
@@ -54,12 +57,20 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.pink.shade50,
-                      backgroundImage: _fotoPath != null 
-                          ? _buildImageProvider(_fotoPath!)
-                          : null,
-                      child: _fotoPath == null 
-                        ? const Icon(Icons.camera_alt, size: 40, color: Colors.pink) 
-                        : null,
+                      child: ClipOval(
+                        child: imageProvider != null
+                          ? Image(
+                              image: imageProvider,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                debugPrint("Erro ao carregar imagem no CadastroScreen: $error");
+                                return const Icon(Icons.camera_alt, size: 40, color: Colors.pink);
+                              },
+                            )
+                          : const Icon(Icons.camera_alt, size: 40, color: Colors.pink),
+                      ),
                     ),
                     // TEXTO DE BAIXO DO CÍRCULO DA FOTO
                     const SizedBox(height: 8),
@@ -198,7 +209,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     );
                     // INSERE NO BANCO E PEGA O ID GERADO
                     int idGerado = await DatabaseHelper().insertGestante(novaGestante);
-                    novaGestante.id = idGerado;
+                    novaGestante.id = idGerado.toString();
                     if (!mounted) return;
            
                     Navigator.pop(context, novaGestante);

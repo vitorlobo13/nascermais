@@ -126,6 +126,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           final Color cardColor = isArquivada ? Colors.grey.shade100 : Colors.white;
                           final Color textColor = isArquivada ? Colors.grey.shade600 : Colors.black87;
                           final Color subtextColor = isArquivada ? Colors.grey.shade400 : Colors.pink.shade400;
+                          final imageProvider = (g.fotoPath != null && g.fotoPath!.isNotEmpty)
+                              ? _buildImageProvider(g.fotoPath!)
+                              : null;
 
                           return Dismissible(
                             key: Key(g.id?.toString() ?? g.nome + index.toString()),
@@ -173,15 +176,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   leading: CircleAvatar(
                                     radius: 25,
                                     backgroundColor: isArquivada ? Colors.grey.shade400 : Colors.pink.shade100,
-                                    backgroundImage: (g.fotoPath != null && g.fotoPath!.isNotEmpty)
-                                        ? _buildImageProvider(g.fotoPath!)
-                                        : null,
-                                    child: (g.fotoPath == null || g.fotoPath!.isEmpty)
-                                        ? Text(
-                                            g.nome[0].toUpperCase(),
-                                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                                          )
-                                        : null,
+                                    child: ClipOval(
+                                      child: imageProvider != null
+                                          ? Image(
+                                              image: imageProvider,
+                                              width: 50,
+                                              height: 50,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                debugPrint("Erro ao carregar imagem no HomeScreen (${g.nome}): $error");
+                                                return Text(
+                                                  g.nome[0].toUpperCase(),
+                                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                                                );
+                                              },
+                                            )
+                                          : Text(
+                                              g.nome[0].toUpperCase(),
+                                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                                            ),
+                                    ),
                                   ),
                                   title: Text(
                                     g.nome, 

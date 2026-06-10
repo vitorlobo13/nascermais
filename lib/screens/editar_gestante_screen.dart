@@ -52,6 +52,9 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = (_fotoPath != null && _fotoPath!.isNotEmpty)
+        ? _buildImageProvider(_fotoPath!)
+        : null;
     return Scaffold(
       //TEXTO E CABEÇALHO TOPO DA TELA
       appBar: AppBar(
@@ -73,12 +76,20 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.pink.shade50,
-                      backgroundImage: _fotoPath != null
-                          ? _buildImageProvider(_fotoPath!)
-                          : null,
-                      child: _fotoPath == null
-                          ? const Icon(Icons.camera_alt, size: 40, color: Colors.pink)
-                          : null,
+                      child: ClipOval(
+                        child: imageProvider != null
+                          ? Image(
+                              image: imageProvider,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                debugPrint("Erro ao carregar imagem no EditarGestanteScreen: $error");
+                                return const Icon(Icons.camera_alt, size: 40, color: Colors.pink);
+                              },
+                            )
+                          : const Icon(Icons.camera_alt, size: 40, color: Colors.pink),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     const Text('Alterar Foto', style: TextStyle(color: Colors.grey, fontSize: 12)),
