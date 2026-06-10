@@ -36,8 +36,7 @@ class NotificationService {
 
     // Regra de Negócio: Se quitou ou não tem dia de vencimento, cancela notificação
     if (g.saldoDevedor <= 0 || g.diaVencimento == null) {
-      // CORREÇÃO 2: Adicionado o nome do parâmetro 'id'
-      await _notifications.cancel(id: g.id!);
+      await _notifications.cancel(id: g.id.hashCode);
       return;
     }
 
@@ -49,14 +48,11 @@ class NotificationService {
       dataAgendada = tz.TZDateTime(tz.local, agora.year, agora.month + 1, g.diaVencimento!, 9, 0);
     }
 
-    // CORREÇÃO 3: Todos os parâmetros abaixo agora são nomeados,
-    // e o antigo 'uiLocalNotificationDateInterpretation' foi removido.
     await _notifications.zonedSchedule(
-          id: g.id!,
+          id: g.id.hashCode,
           title: 'Vencimento de Contrato',
           body: 'Hoje vence a parcela de ${g.nome}',
           scheduledDate: dataAgendada,
-          // AJUSTE AQUI: Mudou de 'details' para 'notificationDetails'
           notificationDetails: const NotificationDetails(
             android: AndroidNotificationDetails(
               'financeiro_channel',

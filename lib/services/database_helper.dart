@@ -334,7 +334,7 @@ class DatabaseHelper {
       
       // 3. Monta o objeto Gestante
       result.add(Gestante(
-        id: gestanteId,
+        id: gestanteId.toString(),
         nome: gMap['nome'] as String,
         dppFinal: DateTime.parse(gMap['dppFinal'] as String),
         maternidade: gMap['maternidade'] as String? ?? '',
