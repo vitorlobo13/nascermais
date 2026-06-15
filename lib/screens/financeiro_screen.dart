@@ -10,15 +10,37 @@ class FinanceiroScreen extends StatefulWidget {
 }
 
 class _FinanceiroScreenState extends State<FinanceiroScreen> {
+  bool _mostrarQuitados = false;
+
   @override
   Widget build(BuildContext context) {
     final provider = GestantesStateScope.of(context);
+
+    if (provider.isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Gestão Financeira'),
+          backgroundColor: Colors.green.shade100,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.green,
+          ),
+        ),
+      );
+    }
+
     final gestantes = provider.gestantes;
 
     // Calculos para o resumo do topo (considerando todas as gestantes)
     double totalContratado = gestantes.fold(0, (s, g) => s + g.valorContrato);
     double totalRecebido = gestantes.fold(0, (s, g) => s + g.totalPago);
     int pendentesEntrega = gestantes.where((g) => g.valorContrato > 0 && !g.contratoEntregue).length;
+
+    final gestantesExibidas = gestantes.where((g) {
+      if (_mostrarQuitados) return true;
+      return g.valorContrato == 0 || g.saldoDevedor > 0;
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -39,14 +61,45 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
               ],
             ),
           ),
-          // LISTA DE TODAS AS GESTANTES
+          // FILTRO PARA OCULTAR/MOSTRAR QUITADAS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Lista de Contratos',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                ),
+                Row(
+                  children: [
+                    const Text('Mostrar quitados', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                    const SizedBox(width: 4),
+                    Switch(
+                      value: _mostrarQuitados,
+                      activeTrackColor: Colors.green.shade200,
+                      activeThumbColor: Colors.green,
+                      onChanged: (value) {
+                        setState(() {
+                          _mostrarQuitados = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // LISTA DE GESTANTES FILTRADAS
           Expanded(
             child: gestantes.isEmpty
                 ? const Center(child: Text('Nenhuma gestante cadastrada.\nCadastre uma gestante primeiro.', textAlign: TextAlign.center))
-                : ListView.builder(
-                    itemCount: gestantes.length,
-                    itemBuilder: (context, index) {
-                      final g = gestantes[index];
+                : gestantesExibidas.isEmpty
+                    ? const Center(child: Text('Todos os contratos estão quitados! 🎉\nHabilite "Mostrar quitados" para ver o histórico.', textAlign: TextAlign.center))
+                    : ListView.builder(
+                        itemCount: gestantesExibidas.length,
+                        itemBuilder: (context, index) {
+                          final g = gestantesExibidas[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: ListTile(
