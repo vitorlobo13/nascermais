@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/gestante.dart';
-import 'database_helper.dart';
 
 class GerenciaParto {
   static Future<void> executar({
@@ -35,8 +34,6 @@ class GerenciaParto {
           gestante.jaNasceu = false;
           gestante.dataNascimento = null;
         });
-
-        await DatabaseHelper().updateGestante(gestante);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -130,8 +127,6 @@ class GerenciaParto {
           gestante.jaNasceu = true;
           gestante.dataNascimento = dataNascimento;
         });
-
-        await DatabaseHelper().updateGestante(gestante);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

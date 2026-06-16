@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/gestante.dart';
-import '../services/database_helper.dart';
 
 class ArquivaGestante {
   /// Executa o processo de alternar o status de arquivamento, 
@@ -17,10 +16,7 @@ class ArquivaGestante {
       gestante.arquivada = !gestante.arquivada;
     });
 
-    // 2. Salva no Banco de Dados através do Singleton DatabaseHelper
-    await DatabaseHelper().updateGestante(gestante);
-
-    // 3. Segurança: verifica se o widget ainda está na árvore de elementos
+    // 2. Segurança: verifica se o widget ainda está na árvore de elementos
     if (!mounted) return;
 
     // 4. Feedback visual (SnackBar)

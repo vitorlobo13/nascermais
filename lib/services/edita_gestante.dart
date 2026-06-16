@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/gestante.dart';
-import '../services/database_helper.dart';
 import '../screens/editar_gestante_screen.dart';
 
 class EditaGestante {
@@ -35,9 +34,6 @@ class EditaGestante {
         gestante.pagamentos = atualizada.pagamentos;
         gestante.contratoEntregue = atualizada.contratoEntregue;
       });
-
-      // 3. Persiste no Banco de Dados
-      await DatabaseHelper().updateGestante(gestante);
     }
   }
 }
