@@ -4,7 +4,7 @@
 
 O **Nascer+** é um aplicativo moderno e multiplataforma (Mobile/Web) desenvolvido para auxiliar profissionais da área de obstetrícia (obstetras, doulas e parteiras) no gerenciamento, acompanhamento de gestantes e controle financeiro de contratos. 
 
-O projeto conta com uma arquitetura resiliente híbrida que opera de forma offline-first (com banco de dados **SQLite** local) e possui integração e sincronização transparente com a nuvem via **Firebase** (Autenticação, Firestore e Storage).
+O projeto conta com integração e sincronização em tempo real com a nuvem via **Firebase** (Autenticação, Firestore e Storage).
 
 ---
 
@@ -12,7 +12,7 @@ O projeto conta com uma arquitetura resiliente híbrida que opera de forma offli
 
 O aplicativo Nascer+ oferece as seguintes ferramentas integradas:
 
-*   **Autenticação e Acesso Seguro**: Tela de login elegante com design Glassmorphism integrada ao Firebase Auth. Caso a sincronização na nuvem esteja desabilitada, o app inicia instantaneamente em modo local de forma anônima.
+*   **Autenticação e Acesso Seguro**: Tela de login elegante com design Glassmorphism integrada ao Firebase Auth.
 *   **Cadastro de Gestantes**: Registro completo incluindo nome, maternidade, classificação de risco (Risco Habitual ou Alto Risco) e foto de perfil (com suporte para corte e edição).
 *   **Cálculo Clínico de DPP**: Calculadora integrada para estimar a Data Provável do Parto (DPP) com base na Data da Última Menstruação (DUM) ou Ultrassonografia.
 *   **Ficha de Acompanhamento (Checklist)**: Gerenciamento em cascata de cartões e subtópicos para registrar o progresso do pré-natal. Possui a funcionalidade de **Importar Ficha** para copiar a estrutura de cartões de uma gestante para outra rapidamente.
@@ -35,7 +35,6 @@ O aplicativo Nascer+ oferece as seguintes ferramentas integradas:
 O Nascer+ é construído utilizando as seguintes tecnologias e pacotes:
 
 *   **Flutter & Dart**: Framework de UI multiplataforma e linguagem de desenvolvimento.
-*   **Banco de Dados Local (SQLite)**: Implementado através de `sqflite` (Mobile), `sqflite_common_ffi` (Desktop/Testes) e `sqflite_common_ffi_web` (Web), suportando versionamento e migração automática de tabelas (versão 5 atual do schema).
 *   **Firebase Suite**:
     *   `firebase_core`: Inicialização da plataforma.
     *   `firebase_auth`: Autenticação segura de usuários.
@@ -73,11 +72,10 @@ lib/
     ├── arquiva_gestante.dart     # Regras de arquivamento local/remoto
     ├── calculo_dum.dart          # Cálculo de DPP por Data da Última Menstruação
     ├── calculo_ultra.dart        # Cálculo de DPP por Ultrassom
-    ├── database_helper.dart      # Gerenciador SQLite e controle de migração de schema (V5)
     ├── edita_gestante.dart       # Fluxo de atualização de cadastros
     ├── ficha_service.dart        # Lógica de atualização em cascata de checklists
     ├── gerencia_parto.dart       # Caixa de diálogo com DatePicker para registrar o nascimento
-    ├── gestantes_provider.dart   # Gerenciador de estado híbrido (SQLite / Firebase)
+    ├── gestantes_provider.dart   # Gerenciador de estado (Firebase)
     ├── image_convert_database.dart # Conversão de imagens locais para visualização offline
     ├── image_escolher.dart       # Serviços de câmera e galeria do dispositivo
     └── notification_service.dart # Agendador de lembretes e solicitações de permissão

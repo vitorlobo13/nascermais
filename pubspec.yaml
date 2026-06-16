@@ -15,11 +15,7 @@ dependencies:
   intl: ^0.20.2
   cupertino_icons: ^1.0.2
 
-  # Persistência de Dados (Banco de Dados)
-  sqflite: ^2.3.0               # Nativo (Android/iOS)
-  sqflite_common_ffi: ^2.3.0+2  # Desktop/Testes
-  sqflite_common_ffi_web: ^1.1.1 # Web (Vercel)
-  path: ^1.9.0                  # Manipulação de caminhos
+
 
   # Câmera e Galeria de Fotos
   image_picker: ^1.1.0          # Selecionar foto
