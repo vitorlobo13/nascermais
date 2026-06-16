@@ -54,6 +54,7 @@ class Gestante {
   bool contratoEntregue;
   bool arquivada;
   bool jaNasceu;
+  DateTime? dataNascimento;
 
   Gestante({
     this.id,
@@ -69,11 +70,38 @@ class Gestante {
     List<Pagamento>? pagamentos,
     this.arquivada = false,
     this.jaNasceu = false,
+    this.dataNascimento,
   }) : ficha = ficha ?? [], pagamentos = pagamentos ?? [];
 
   // Getters para lógica de negócio sobre pós-parto
   String get semanasHoje {
-    if (jaNasceu) return 'Pós-parto';
+    if (jaNasceu) {
+      if (dataNascimento != null) {
+        final hoje = DateTime.now();
+        final hojeMeiaNoite = DateTime(hoje.year, hoje.month, hoje.day);
+        final nascMeiaNoite = DateTime(dataNascimento!.year, dataNascimento!.month, dataNascimento!.day);
+        final diferencaDias = hojeMeiaNoite.difference(nascMeiaNoite).inDays;
+        
+        if (diferencaDias < 0) {
+          return 'Recém-nascido';
+        }
+        
+        final semanas = diferencaDias ~/ 7;
+        final dias = diferencaDias % 7;
+        
+        String textSemanas = semanas == 1 ? '1 semana' : '$semanas semanas';
+        String textDias = dias == 1 ? '1 dia' : '$dias dias';
+        
+        if (semanas == 0) {
+          return '$textDias pós-parto';
+        } else if (dias == 0) {
+          return '$textSemanas pós-parto';
+        } else {
+          return '$textSemanas e $textDias pós-parto';
+        }
+      }
+      return 'Pós-parto';
+    }
     final hoje = DateTime.now();
     final hojeMeiaNoite = DateTime(hoje.year, hoje.month, hoje.day);
     final dppMeiaNoite = DateTime(dppFinal.year, dppFinal.month, dppFinal.day);
@@ -103,6 +131,7 @@ class Gestante {
       'contratoEntregue': contratoEntregue ? 1 : 0,
       'arquivada': arquivada ? 1 : 0,
       'jaNasceu': jaNasceu ? 1 : 0,
+      'dataNascimento': dataNascimento?.toIso8601String(),
     };
   }
 
@@ -121,6 +150,7 @@ class Gestante {
       contratoEntregue: map['contratoEntregue'] == 1,
       arquivada: map['arquivada'] == 1,
       jaNasceu: map['jaNasceu'] == 1,
+      dataNascimento: map['dataNascimento'] != null ? DateTime.parse(map['dataNascimento']) : null,
     );
   }
 }
