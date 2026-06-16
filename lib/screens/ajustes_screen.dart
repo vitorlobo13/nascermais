@@ -51,7 +51,7 @@ class AjustesScreen extends StatelessWidget {
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Text('Versão 3.0.2', style: TextStyle(color: Colors.grey)),
+                Text('Versão 3.0.3', style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',

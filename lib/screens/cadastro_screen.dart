@@ -1,5 +1,5 @@
 import '../models/gestante.dart';
-import '../services/database_helper.dart';
+import '../services/gestantes_provider.dart';
 import '../services/image_escolher.dart';
 import '../services/image_convert_database.dart';
 import '../services/calculo_dum.dart';
@@ -207,9 +207,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
                           CartaoFicha(titulo: 'Risco: $_classificacaoRisco', concluido: true),
                         ],
                     );
-                    // INSERE NO BANCO E PEGA O ID GERADO
-                    int idGerado = await DatabaseHelper().insertGestante(novaGestante);
-                    novaGestante.id = idGerado.toString();
+                    // SALVA NO PROVEDOR (FIRESTORE)
+                    final provider = GestantesStateScope.of(context, listen: false);
+                    await provider.adicionarGestante(novaGestante);
+                    
                     if (!mounted) return;
            
                     Navigator.pop(context, novaGestante);

@@ -86,6 +86,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
 
     final gestantes = provider.gestantes;
+    final agora = DateTime.now();
+    final totalGestantesAtivas = gestantes.where((g) => !g.arquivada).length;
+    final partosEsteMes = gestantes.where((g) {
+      return !g.arquivada && g.dppFinal.month == agora.month && g.dppFinal.year == agora.year;
+    }).length;
+
     final query = _buscaController.text;
     final bool mostrarArquivadas = _tabController.index == 1;
 
@@ -103,15 +109,125 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         title: const Text('Nascer+', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink)),
         backgroundColor: Colors.pink.shade50,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.pink,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.pink,
-          tabs: const [
-            Tab(icon: Icon(Icons.pregnant_woman), text: 'Ativas'),
-            Tab(icon: Icon(Icons.inventory_2_outlined), text: 'Arquivadas'),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(134.0),
+          child: Column(
+            children: [
+              // CARD DE RESUMO (Total de Gestantes e Partos este mês)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Total de Gestantes
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.pregnant_woman_outlined,
+                              color: Colors.pink,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Total de Gestantes',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$totalGestantesAtivas',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF006870),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Linha divisória vertical
+                      Container(
+                        height: 40,
+                        width: 1,
+                        color: Colors.grey.shade200,
+                      ),
+                      // Partos este mês
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: Colors.pink,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Partos este mês',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$partosEsteMes',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF006870),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // TabBar
+              TabBar(
+                controller: _tabController,
+                labelColor: Colors.pink,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Colors.pink,
+                tabs: const [
+                  Tab(icon: Icon(Icons.pregnant_woman), text: 'Ativas'),
+                  Tab(icon: Icon(Icons.inventory_2_outlined), text: 'Arquivadas'),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       body: Stack(

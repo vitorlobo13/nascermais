@@ -190,7 +190,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                   'Total a receber',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: Colors.grey.shade400,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                               ],
@@ -248,7 +248,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                   'Aguardando entrega',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: Colors.grey.shade400,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                               ],
@@ -277,7 +277,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                       decoration: InputDecoration(
                         hintText: 'Buscar contrato ou gestante...',
                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 20),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 20),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0),
                         filled: true,
                         fillColor: Colors.white,
@@ -437,7 +437,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                           ],
                                         ),
                                         const SizedBox(width: 8),
-                                        Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                                        Icon(Icons.chevron_right, color: Colors.grey.shade600),
                                       ],
                                     ),
                                     if (g.valorContrato > 0) ...[
@@ -526,7 +526,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
       textColor = const Color(0xFF2E7D32);
       icon = Icons.check_circle_outline;
     } else {
-      label = 'Pendente';
+      label = 'Contrato Pendente';
       bgColor = const Color(0xFFFFF3E0);
       textColor = const Color(0xFFFB8C00);
       icon = Icons.error_outline;
