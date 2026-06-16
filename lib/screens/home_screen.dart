@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 // Logo centralizada
                 Center(
                   child: Image.asset(
-                    'assets/images/nascermaisicon_login.png',
+                    'assets/images/nascermaisicon.png',
                     width: 180,
                     height: 180,
                     fit: BoxFit.contain,
@@ -251,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     children: [
                                       const SizedBox(height: 4),
                                       Text(
-                                        isArquivada ? 'Registro Arquivado' : g.semanasHoje, 
+                                        g.semanasHoje, 
                                         style: TextStyle(color: subtextColor, fontWeight: FontWeight.w500)
                                       ),
                                       Text(
