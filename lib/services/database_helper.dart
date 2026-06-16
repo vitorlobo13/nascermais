@@ -48,7 +48,7 @@ class DatabaseHelper {
     return await dbFactory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 4,
+        version: 5,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       ),
@@ -68,7 +68,8 @@ class DatabaseHelper {
         diaVencimento INTEGER,
         contratoEntregue INTEGER,
         arquivada INTEGER DEFAULT 0,
-        jaNasceu INTEGER DEFAULT 0
+        jaNasceu INTEGER DEFAULT 0,
+        dataNascimento TEXT
       )
     ''');
 
@@ -131,7 +132,8 @@ class DatabaseHelper {
           diaVencimento INTEGER,
           contratoEntregue INTEGER,
           arquivada INTEGER DEFAULT 0,
-          jaNasceu INTEGER DEFAULT 0
+          jaNasceu INTEGER DEFAULT 0,
+          dataNascimento TEXT
         )
       ''');
 
@@ -181,6 +183,7 @@ class DatabaseHelper {
           'contratoEntregue': old['contratoEntregue'],
           'arquivada': old['arquivada'] ?? 0,
           'jaNasceu': old['jaNasceu'] ?? 0,
+          'dataNascimento': old['dataNascimento'],
         });
 
         // Migrate cards
@@ -230,6 +233,15 @@ class DatabaseHelper {
       await db.execute('DROP TABLE gestantes_old');
       print("Database upgraded to version 4: Normalized schema.");
     }
+
+    if (oldVersion < 5) {
+      try {
+        await db.execute(
+          'ALTER TABLE gestantes ADD COLUMN dataNascimento TEXT'
+        );
+      } catch (_) {}
+      print("Database upgraded to version 5: Column 'dataNascimento' added.");
+    }
   }
 
   // Operações CRUD normalizadas
@@ -247,6 +259,7 @@ class DatabaseHelper {
         'contratoEntregue': gestante.contratoEntregue ? 1 : 0,
         'arquivada': gestante.arquivada ? 1 : 0,
         'jaNasceu': gestante.jaNasceu ? 1 : 0,
+        'dataNascimento': gestante.dataNascimento?.toIso8601String(),
       });
 
       // Salva cartões
@@ -347,6 +360,7 @@ class DatabaseHelper {
         pagamentos: payments,
         arquivada: gMap['arquivada'] == 1,
         jaNasceu: gMap['jaNasceu'] == 1,
+        dataNascimento: gMap['dataNascimento'] != null ? DateTime.parse(gMap['dataNascimento'] as String) : null,
       ));
     }
     
@@ -371,6 +385,7 @@ class DatabaseHelper {
           'contratoEntregue': gestante.contratoEntregue ? 1 : 0,
           'arquivada': gestante.arquivada ? 1 : 0,
           'jaNasceu': gestante.jaNasceu ? 1 : 0,
+          'dataNascimento': gestante.dataNascimento?.toIso8601String(),
         },
         where: 'id = ?',
         whereArgs: [gestante.id],

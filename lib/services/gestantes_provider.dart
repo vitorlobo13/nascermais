@@ -257,6 +257,7 @@ class GestantesProvider extends ChangeNotifier {
       pagamentos: (data['pagamentos'] as List? ?? []).map((p) => Pagamento.fromJson(p as Map<String, dynamic>)).toList(),
       arquivada: data['arquivada'] == true,
       jaNasceu: data['jaNasceu'] == true,
+      dataNascimento: data['dataNascimento'] != null ? DateTime.parse(data['dataNascimento'] as String) : null,
     );
   }
 
@@ -272,6 +273,7 @@ class GestantesProvider extends ChangeNotifier {
       'contratoEntregue': g.contratoEntregue,
       'arquivada': g.arquivada,
       'jaNasceu': g.jaNasceu,
+      'dataNascimento': g.dataNascimento?.toIso8601String(),
       'ficha': g.ficha.map((f) => f.toJson()).toList(),
       'pagamentos': g.pagamentos.map((p) => p.toJson()).toList(),
     };
