@@ -1,46 +1,52 @@
-name: iOS-ipa-build
+name: iOS Build (Verificação)
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build-ios:
-    name: 🎉 iOS Build
+    name: Build iOS (sem assinatura)
     runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - uses: subosito/flutter-action@v2
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          architecture: x64
-      - run: flutter pub get
-      
+          cache: true
 
-      - run: pod repo update
-        working-directory: ios
-        
-      # 4. Instala as dependências nativas iOS via CocoaPods
+      - name: Instalar dependências Flutter
+        run: flutter pub get
+
       - name: Instalar CocoaPods
         run: |
           cd ios
           pod install --repo-update
 
-      - run: flutter build ios --release --no-codesign
+      - name: Analisar código Flutter
+        run: flutter analyze lib/ --no-fatal-infos
 
-      - run: mkdir Payload
-        working-directory: build/ios/iphoneos
+      - name: Build iOS (sem assinatura de código)
+        run: flutter build ios --release --no-codesign
 
-      - run: mv Runner.app/ Payload
-        working-directory: build/ios/iphoneos
+      # Empacota o .app dentro de Payload/ e gera o .ipa manualmente
+      - name: Empacotar .ipa manualmente
+        run: |
+          mkdir -p /tmp/Payload
+          cp -r build/ios/iphoneos/Runner.app /tmp/Payload/Runner.app
+          cd /tmp
+          zip -r Runner.ipa Payload/
+          mv /tmp/Runner.ipa $GITHUB_WORKSPACE/Runner.ipa
 
-      - name: Zip output
-        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Salvar artefato .ipa
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          body: "This is first release"
+          name: ios-build-${{ github.run_number }}
+          path: Runner.ipa
+          retention-days: 7
