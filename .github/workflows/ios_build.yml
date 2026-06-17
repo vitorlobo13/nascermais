@@ -1,0 +1,64 @@
+name: iOS Build (Verificação)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-ios:
+    name: Build iOS (sem assinatura)
+    runs-on: macos-latest
+
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2. Configura o Flutter
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      # 3. Reconstrói a estrutura nativa iOS (igual ao que você faz no Android)
+      - name: Reconstruir estrutura iOS nativa
+        run: |
+          mv lib lib_backup
+          mv pubspec.yaml pubspec_backup.yaml
+
+          flutter create . --overwrite --platforms=ios
+
+          rm -rf lib
+          mv lib_backup lib
+          rm pubspec.yaml
+          mv pubspec_backup.yaml pubspec.yaml
+
+      # 4. Instala as dependências do Flutter
+      - name: Instalar dependências Flutter
+        run: flutter pub get
+
+      # 5. Instala as dependências nativas iOS via CocoaPods
+      - name: Instalar CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+        
+      # 6. Verifica se há erros no código Dart/Flutter
+      - name: Analisar código Flutter
+        run: flutter analyze --no-fatal-infos
+
+      # 7. Compila o app iOS SEM assinatura (apenas verifica se tudo compila)
+      - name: Build iOS (sem assinatura de código)
+        run: flutter build ios --release --no-codesign
+
+      # 8. Salva o resultado como artefato para download
+      - name: Salvar artefato iOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-${{ github.run_number }}
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 7
