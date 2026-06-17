@@ -23,13 +23,16 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 3. Gera a pasta ios/ (Flutter só cria arquivos que não existem,
-      #    sem tocar em lib/ ou pubspec.yaml já existentes)
-      - name: Gerar estrutura iOS nativa
-        run: flutter create . --platforms=ios
+      # 3. --overwrite é necessário para o Flutter gerar a pasta ios/ e o Podfile.
+      #    Usamos cp para proteger o pubspec.yaml original antes de ele ser sobrescrito.
+      - name: Gerar estrutura iOS nativa (com Podfile)
+        run: |
+          cp pubspec.yaml pubspec_backup.yaml
+          flutter create . --overwrite --platforms=ios
+          mv pubspec_backup.yaml pubspec.yaml
 
       # 4. Instala as dependências do Flutter
-      #    (também gera o .flutter-plugins que o Podfile precisa)
+      #    (gera o .flutter-plugins-dependencies que o Podfile precisa)
       - name: Instalar dependências Flutter
         run: flutter pub get
 
