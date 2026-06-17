@@ -23,20 +23,13 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 3. Reconstrói a estrutura nativa iOS (igual ao que você faz no Android)
-      - name: Reconstruir estrutura iOS nativa
-        run: |
-          mv lib lib_backup
-          mv pubspec.yaml pubspec_backup.yaml
-
-          flutter create . --overwrite --platforms=ios
-
-          rm -rf lib
-          mv lib_backup lib
-          rm pubspec.yaml
-          mv pubspec_backup.yaml pubspec.yaml
+      # 3. Gera a pasta ios/ (Flutter só cria arquivos que não existem,
+      #    sem tocar em lib/ ou pubspec.yaml já existentes)
+      - name: Gerar estrutura iOS nativa
+        run: flutter create . --platforms=ios
 
       # 4. Instala as dependências do Flutter
+      #    (também gera o .flutter-plugins que o Podfile precisa)
       - name: Instalar dependências Flutter
         run: flutter pub get
 
