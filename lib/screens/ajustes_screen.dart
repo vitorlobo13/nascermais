@@ -51,7 +51,7 @@ class AjustesScreen extends StatelessWidget {
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Text('Versão 3.0.3', style: TextStyle(color: Colors.grey)),
+                Text('Versão 3.0.4', style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',
@@ -88,6 +88,7 @@ class AjustesScreen extends StatelessWidget {
           _buildGuiaItem(Icons.child_friendly, 'Marcar Nascimento', 'Altere o status da gestante para pós-parto clicando nesse botão.'),
           _buildGuiaItem(Icons.attach_money, 'Financeiro', 'Defina o valor do contrato e registre cada pagamento recebido para ter controle total.'),
           _buildGuiaItem(Icons.search, 'Busca', 'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.'),
+          _buildGuiaItem(Icons.calendar_month_outlined, 'Filtro Mensal', 'Filtre as gestantes pelo mês provável do parto (DPP) clicando no ícone de calendário na busca, exibindo previsões e estatísticas específicas para o mês.'),
           _buildGuiaItem(Icons.delete_sweep, 'Excluir', 'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.'),
           
           if (GestantesProvider.usarFirebase) ...[
