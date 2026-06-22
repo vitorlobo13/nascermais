@@ -108,7 +108,10 @@ class _MainNavigationState extends State<MainNavigation> {
     ];
 
     return Scaffold(
-      body: telas[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: telas,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
