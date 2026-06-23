@@ -52,4 +52,12 @@ class FichaService {
   List<Gestante> obterOutrasGestantes(Gestante atual, List<Gestante> todas) {
     return todas.where((g) => g.nome != atual.nome).toList();
   }
+
+  Future<void> reordenarCartoes(Gestante gestante, int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final CartaoFicha item = gestante.ficha.removeAt(oldIndex);
+    gestante.ficha.insert(newIndex, item);
+  }
 }
