@@ -36,6 +36,7 @@ class CampoDataDUM extends StatelessWidget {
         );
 
         if (picked != null) {
+          if (!context.mounted) return;
           onDataSelecionada(picked);
         }
       },

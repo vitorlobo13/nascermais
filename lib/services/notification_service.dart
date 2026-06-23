@@ -22,10 +22,12 @@ class NotificationService {
   /// Solicita permissões de notificação para Android 13+ e iOS
   Future<bool> solicitarPermissoes() async {
     final bool? androidGranted = await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
     final bool? iosGranted = await _notifications
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(alert: true, badge: true, sound: true);
     return (androidGranted ?? false) || (iosGranted ?? false);
   }

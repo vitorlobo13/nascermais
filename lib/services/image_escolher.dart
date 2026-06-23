@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ImageEscolher {
   // Função para selecionar a foto
@@ -14,7 +15,9 @@ class ImageEscolher {
       maxHeight: 800,
       imageQuality: 85,
     );
-    
+
+    if (!context.mounted) return null;
+
     if (image != null) {
       // 2. Abre o editor de corte (Crop)
       CroppedFile? croppedFile = await ImageCropper().cropImage(
@@ -46,7 +49,7 @@ class ImageEscolher {
           ),
         ],
       );
-      
+
       if (croppedFile != null) {
         if (kIsWeb) {
           // CONVERSÃO PARA BASE64 NO WEB
@@ -58,7 +61,7 @@ class ImageEscolher {
         }
       }
     }
-    
+
     return null;
   }
 }

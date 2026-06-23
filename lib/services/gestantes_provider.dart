@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+
 import '../models/gestante.dart';
 
 class GestantesProvider extends ChangeNotifier {
@@ -65,7 +68,7 @@ class GestantesProvider extends ChangeNotifier {
       final snapshot = await _colecaoFirestore.get();
       _gestantes = snapshot.docs.map((doc) => _mapearFirestoreParaModel(doc.id, doc.data())).toList();
     } catch (e) {
-      debugPrint("Erro ao carregar gestantes: $e");
+      developer.log("Erro ao carregar gestantes", error: e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -86,7 +89,7 @@ class GestantesProvider extends ChangeNotifier {
       _gestantes.add(gestante);
       notifyListeners();
     } catch (e) {
-      debugPrint("Erro ao adicionar gestante: $e");
+      developer.log("Erro ao adicionar gestante", error: e);
     }
   }
 
@@ -108,7 +111,7 @@ class GestantesProvider extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      debugPrint("Erro ao atualizar gestante: $e");
+      developer.log("Erro ao atualizar gestante", error: e);
     }
   }
 
@@ -129,7 +132,7 @@ class GestantesProvider extends ChangeNotifier {
       _gestantes.removeWhere((g) => g.id == gestante.id);
       notifyListeners();
     } catch (e) {
-      debugPrint("Erro ao deletar gestante: $e");
+      developer.log("Erro ao deletar gestante", error: e);
     }
   }
 
@@ -157,7 +160,7 @@ class GestantesProvider extends ChangeNotifier {
       }
       return await ref.getDownloadURL();
     } catch (e) {
-      debugPrint("Erro ao fazer upload da foto: $e");
+      developer.log("Erro ao fazer upload da foto", error: e);
       return path; 
     }
   }

@@ -19,6 +19,7 @@ class EditaGestante {
 
     // 2. Se o usuário salvou e retornou uma gestante nova
     if (atualizada != null) {
+      if (!context.mounted) return;
       setState(() {
         // Sincroniza o objeto original com os novos dados
         // Como objetos em Dart são passados por referência, 

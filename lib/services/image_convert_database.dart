@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' as io;
 import 'dart:convert';
+import 'dart:io' as io;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 
 //SERVE PARA LER A IMAGEM TRAZENDO DO BANCO DE DADOS
 class ImageProviderService {

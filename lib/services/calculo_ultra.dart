@@ -45,6 +45,7 @@ class CampoCadastroUltra extends StatelessWidget {
                 lastDate: DateTime.now(),
               );
               if (picked != null) {
+                if (!context.mounted) return;
                 onDataSelecionada(picked);
               }
             },

@@ -30,6 +30,7 @@ class GerenciaParto {
       );
 
       if (confirmar == true) {
+        if (!context.mounted) return;
         setState(() {
           gestante.jaNasceu = false;
           gestante.dataNascimento = null;
@@ -123,6 +124,7 @@ class GerenciaParto {
       );
 
       if (dataNascimento != null) {
+        if (!context.mounted) return;
         setState(() {
           gestante.jaNasceu = true;
           gestante.dataNascimento = dataNascimento;
