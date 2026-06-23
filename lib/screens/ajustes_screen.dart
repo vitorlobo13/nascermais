@@ -51,7 +51,7 @@ class AjustesScreen extends StatelessWidget {
                   'Nascer+ Beta',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                Text('Versão 3.0.4', style: TextStyle(color: Colors.grey)),
+                Text('Versão 3.0.5', style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 Text(
                   'Obrigado por participar dos testes! Seu feedback é fundamental para o crescimento deste projeto.',
@@ -82,20 +82,62 @@ class AjustesScreen extends StatelessWidget {
             padding: EdgeInsets.all(16.0),
             child: Text('GUIA RÁPIDO', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
           ),
-          _buildGuiaItem(Icons.people, 'Gestantes', 'Cadastre suas clientes e use os cartões para registrar acompanhamentos e informações do pré-natal. Dentro do cartão você pode registrar subtópicos, por exemplo, registrar medicamentos.'),
-          _buildGuiaItem(Icons.content_copy, 'Copiar Cartão', 'Economize tempo copiando a estrutura de tópicos e anotações de outra gestante já cadastrada para uma nova ficha.'),
-          _buildGuiaItem(Icons.archive, 'Arquivar', 'Ao finalizar um acompanhamento, você pode arquivar a gestante. Ela sairá da lista principal, mas os dados continuarão salvos na aba "Arquivadas".'),
-          _buildGuiaItem(Icons.child_friendly, 'Marcar Nascimento', 'Altere o status da gestante para pós-parto clicando nesse botão.'),
-          _buildGuiaItem(Icons.attach_money, 'Financeiro', 'Defina o valor do contrato e registre cada pagamento recebido para ter controle total.'),
-          _buildGuiaItem(Icons.search, 'Busca', 'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.'),
-          _buildGuiaItem(Icons.calendar_month_outlined, 'Filtro Mensal', 'Filtre as gestantes pelo mês provável do parto (DPP) clicando no ícone de calendário na busca, exibindo previsões e estatísticas específicas para o mês.'),
-          _buildGuiaItem(Icons.delete_sweep, 'Excluir', 'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.'),
-          
+          const _GuiaItem(
+            icon: Icons.people,
+            titulo: 'Gestantes',
+            descricao:
+                'Cadastre suas clientes e use os cartões para registrar acompanhamentos e informações do pré-natal. Dentro do cartão você pode registrar subtópicos, por exemplo, registrar medicamentos.',
+          ),
+          const _GuiaItem(
+            icon: Icons.content_copy,
+            titulo: 'Copiar Cartão',
+            descricao:
+                'Economize tempo copiando a estrutura de tópicos e anotações de outra gestante já cadastrada para uma nova ficha.',
+          ),
+          const _GuiaItem(
+            icon: Icons.archive,
+            titulo: 'Arquivar',
+            descricao:
+                'Ao finalizar um acompanhamento, você pode arquivar a gestante. Ela sairá da lista principal, mas os dados continuarão salvos na aba "Arquivadas".',
+          ),
+          const _GuiaItem(
+            icon: Icons.child_friendly,
+            titulo: 'Marcar Nascimento',
+            descricao:
+                'Altere o status da gestante para pós-parto clicando nesse botão.',
+          ),
+          const _GuiaItem(
+            icon: Icons.attach_money,
+            titulo: 'Financeiro',
+            descricao:
+                'Defina o valor do contrato e registre cada pagamento recebido para ter controle total.',
+          ),
+          const _GuiaItem(
+            icon: Icons.search,
+            titulo: 'Busca',
+            descricao:
+                'Use a barra de busca no topo para encontrar rapidamente qualquer gestante pelo nome.',
+          ),
+          const _GuiaItem(
+            icon: Icons.calendar_month_outlined,
+            titulo: 'Filtro Mensal',
+            descricao:
+                'Filtre as gestantes pelo mês provável do parto (DPP) clicando no ícone de calendário na busca, exibindo previsões e estatísticas específicas para o mês.',
+          ),
+          const _GuiaItem(
+            icon: Icons.delete_sweep,
+            titulo: 'Excluir',
+            descricao:
+                'Arraste uma ficha para a esquerda na lista principal para excluí-la permanentemente.',
+          ),
           if (GestantesProvider.usarFirebase) ...[
             const Divider(),
             ListTile(
               leading: const Icon(Icons.exit_to_app, color: Colors.red),
-              title: const Text('Sair da Conta', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              title: const Text(
+                'Sair da Conta',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
               subtitle: const Text('Desconectar o usuário atual'),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () async {
@@ -103,7 +145,6 @@ class AjustesScreen extends StatelessWidget {
               },
             ),
           ],
-
           const SizedBox(height: 40),
           const Center(
             child: Text(
@@ -116,8 +157,21 @@ class AjustesScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildGuiaItem(IconData icon, String titulo, String descricao) {
+class _GuiaItem extends StatelessWidget {
+  final IconData icon;
+  final String titulo;
+  final String descricao;
+
+  const _GuiaItem({
+    required this.icon,
+    required this.titulo,
+    required this.descricao,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -130,7 +184,10 @@ class AjustesScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(titulo, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(descricao, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                Text(
+                  descricao,
+                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                ),
               ],
             ),
           ),

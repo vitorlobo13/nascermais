@@ -1,10 +1,11 @@
-import '../models/gestante.dart';
-import '../services/image_convert_database.dart';
-import '../services/image_escolher.dart';
-import '../services/calculo_dum.dart';
-import '../services/calculo_ultra.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../models/gestante.dart';
+import '../services/calculo_dum.dart';
+import '../services/calculo_ultra.dart';
+import '../services/image_convert_database.dart';
+import '../services/image_escolher.dart';
 
 class EditarGestanteScreen extends StatefulWidget {
   final Gestante gestante;
@@ -138,10 +139,18 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
             //CADASTRO DA DPP DIRETA
             ListTile(
               tileColor: Colors.grey.shade100,
-              title: Text(_dppDireta == null ? 'Data Provável do Parto (DPP) Direta' : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
+              title: Text(_dppDireta == null
+                  ? 'Data Provável do Parto (DPP) Direta'
+                  : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
-                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now().add(const Duration(days: 280)));
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 300)),
+                  lastDate: DateTime.now().add(const Duration(days: 280)),
+                );
+                if (!mounted) return;
                 if (picked != null) {
                   setState(() {
                     _dppDireta = picked;
@@ -269,6 +278,7 @@ class _EditarGestanteScreenState extends State<EditarGestanteScreen> {
   // Função para selecionar a foto
   Future<void> _escolherFoto() async {
     final fotoPath = await _imageEscolher.escolherFoto(context);
+    if (!mounted) return;
     if (fotoPath != null) {
       setState(() {
         _fotoPath = fotoPath;

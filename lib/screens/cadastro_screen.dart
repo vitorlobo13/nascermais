@@ -1,11 +1,12 @@
-import '../models/gestante.dart';
-import '../services/gestantes_provider.dart';
-import '../services/image_escolher.dart';
-import '../services/image_convert_database.dart';
-import '../services/calculo_dum.dart';
-import '../services/calculo_ultra.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import '../models/gestante.dart';
+import '../services/calculo_dum.dart';
+import '../services/calculo_ultra.dart';
+import '../services/gestantes_provider.dart';
+import '../services/image_convert_database.dart';
+import '../services/image_escolher.dart';
 
 
 class CadastroScreen extends StatefulWidget {
@@ -120,10 +121,18 @@ class _CadastroScreenState extends State<CadastroScreen> {
             //CADASTRO DA DPP DIRETA
             ListTile(
               tileColor: Colors.grey.shade100,
-              title: Text(_dppDireta == null ? 'Data Provável do Parto (DPP) Direta' : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
+              title: Text(_dppDireta == null
+                  ? 'Data Provável do Parto (DPP) Direta'
+                  : 'DPP Direta: ${DateFormat('dd/MM/yyyy').format(_dppDireta!)}'),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
-                final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now().subtract(const Duration(days: 300)), lastDate: DateTime.now().add(const Duration(days: 280)));
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 300)),
+                  lastDate: DateTime.now().add(const Duration(days: 280)),
+                );
+                if (!context.mounted) return;
                 if (picked != null) {
                   setState(() {
                     _dppDireta = picked;
@@ -211,11 +220,18 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     final provider = GestantesStateScope.of(context, listen: false);
                     await provider.adicionarGestante(novaGestante);
                     
-                    if (!mounted) return;
+                    if (!context.mounted) return;
            
                     Navigator.pop(context, novaGestante);
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha o nome da gestante e calcule a DPP')));
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Preencha o nome da gestante e calcule a DPP',
+                        ),
+                      ),
+                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),
@@ -233,6 +249,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
   // Função para selecionar a foto
   Future<void> _escolherFoto() async {
     final fotoPath = await _imageEscolher.escolherFoto(context);
+    if (!mounted) return;
     if (fotoPath != null) {
       setState(() {
         _fotoPath = fotoPath;

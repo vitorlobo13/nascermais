@@ -201,7 +201,7 @@ class _DetalhesGestanteScreenState extends State<DetalhesGestanteScreen> {
                   onDismissed: (direction) async {
                     final titulo = cartao.titulo;
                     await _fichaService.excluirCartao(widget.gestante, index);
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     _atualizar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Cartão '$titulo' excluído")),

@@ -37,11 +37,13 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
 
   /// Centraliza a atualização da UI e das notificações
   Future<void> _sincronizarDados() async {
-    setState(() {}); 
+    if (!mounted) return;
+    setState(() {});
     _notificationService.atualizarLembrete(widget.gestante);
-    
+
     // SALVAR NO PROVEDOR DE ESTADO (que persiste no banco)
-    GestantesStateScope.of(context, listen: false).atualizarGestante(widget.gestante);
+    GestantesStateScope.of(context, listen: false)
+        .atualizarGestante(widget.gestante);
   }
 
   @override
@@ -124,9 +126,21 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _resumoMini('Total', g.valorContrato, Colors.blue),
-                  _resumoMini('Pago', g.totalPago, Colors.green),
-                  _resumoMini('Saldo', g.saldoDevedor, g.saldoDevedor > 0 ? Colors.red : Colors.grey),
+                  _ResumoMini(
+                    label: 'Total',
+                    valor: g.valorContrato,
+                    cor: Colors.blue,
+                  ),
+                  _ResumoMini(
+                    label: 'Pago',
+                    valor: g.totalPago,
+                    cor: Colors.green,
+                  ),
+                  _ResumoMini(
+                    label: 'Saldo',
+                    valor: g.saldoDevedor,
+                    cor: g.saldoDevedor > 0 ? Colors.red : Colors.grey,
+                  ),
                 ],
               ),
             ),
@@ -201,13 +215,31 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
     );
   }
 
-  Widget _resumoMini(String label, double valor, Color cor) {
+}
+
+class _ResumoMini extends StatelessWidget {
+  final String label;
+  final double valor;
+  final Color cor;
+
+  const _ResumoMini({
+    required this.label,
+    required this.valor,
+    required this.cor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         Text(
-          'R\$ ${valor.toStringAsFixed(2)}', 
-          style: TextStyle(fontWeight: FontWeight.bold, color: cor, fontSize: 16)
+          'R\$ ${valor.toStringAsFixed(2)}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: cor,
+            fontSize: 16,
+          ),
         ),
       ],
     );

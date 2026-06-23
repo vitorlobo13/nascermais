@@ -5,23 +5,31 @@ import '../services/ficha_service.dart';
 class DetalhesDialogs {
   static final FichaService _fichaService = FichaService();
 
-  static void mostrarDialogoNovoCartao(BuildContext context, Gestante gestante, VoidCallback onAtualizar) {
+  static void mostrarDialogoNovoCartao(
+    BuildContext context,
+    Gestante gestante,
+    VoidCallback onAtualizar,
+  ) {
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Novo Cartão'),
         content: TextField(
-          controller: controller, 
+          controller: controller,
           decoration: const InputDecoration(hintText: 'Título do cartão'),
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
                 await _fichaService.adicionarCartao(gestante, controller.text);
+                if (!ctx.mounted) return;
                 Navigator.pop(ctx);
                 onAtualizar();
               }
@@ -33,8 +41,14 @@ class DetalhesDialogs {
     );
   }
 
-  static void mostrarDialogoEditarTitulo(BuildContext context, Gestante gestante, int index, VoidCallback onAtualizar) {
-    final controller = TextEditingController(text: gestante.ficha[index].titulo);
+  static void mostrarDialogoEditarTitulo(
+    BuildContext context,
+    Gestante gestante,
+    int index,
+    VoidCallback onAtualizar,
+  ) {
+    final controller =
+        TextEditingController(text: gestante.ficha[index].titulo);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -44,11 +58,19 @@ class DetalhesDialogs {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
-                await _fichaService.editarTituloCartao(gestante, index, controller.text);
+                await _fichaService.editarTituloCartao(
+                  gestante,
+                  index,
+                  controller.text,
+                );
+                if (!ctx.mounted) return;
                 Navigator.pop(ctx);
                 onAtualizar();
               }
@@ -60,7 +82,12 @@ class DetalhesDialogs {
     );
   }
 
-  static void mostrarDialogoAdicionarItem(BuildContext context, Gestante gestante, CartaoFicha cartao, VoidCallback onAtualizar) {
+  static void mostrarDialogoAdicionarItem(
+    BuildContext context,
+    Gestante gestante,
+    CartaoFicha cartao,
+    VoidCallback onAtualizar,
+  ) {
     final itemController = TextEditingController();
     showDialog(
       context: context,
@@ -69,14 +96,23 @@ class DetalhesDialogs {
         content: TextField(
           controller: itemController,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Digite o nome do item...'),
+          decoration:
+              const InputDecoration(hintText: 'Digite o nome do item...'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (itemController.text.isNotEmpty) {
-                await _fichaService.adicionarSubtopico(gestante, cartao, itemController.text);
+                await _fichaService.adicionarSubtopico(
+                  gestante,
+                  cartao,
+                  itemController.text,
+                );
+                if (!ctx.mounted) return;
                 Navigator.pop(ctx);
                 onAtualizar();
               }
@@ -88,15 +124,24 @@ class DetalhesDialogs {
     );
   }
 
-  static void mostrarImportarFicha(BuildContext context, Gestante gestante, List<Gestante> todasAsGestantes, VoidCallback onAtualizar) {
-    final outras = _fichaService.obterOutrasGestantes(gestante, todasAsGestantes);
+  static void mostrarImportarFicha(
+    BuildContext context,
+    Gestante gestante,
+    List<Gestante> todasAsGestantes,
+    VoidCallback onAtualizar,
+  ) {
+    final outras =
+        _fichaService.obterOutrasGestantes(gestante, todasAsGestantes);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Column(
         children: [
           const Padding(
             padding: EdgeInsets.all(16.0),
-            child: Text('Copiar cartões de:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            child: Text(
+              'Copiar cartões de:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
           ),
           Expanded(
             child: ListView.builder(
@@ -108,10 +153,16 @@ class DetalhesDialogs {
                   title: Text(g.nome),
                   onTap: () async {
                     await _fichaService.importarFicha(gestante, g);
+                    if (!ctx.mounted) return;
                     Navigator.pop(ctx);
                     onAtualizar();
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Cartões importados (DPP, Maternidade e Risco ignorados)')),
+                      const SnackBar(
+                        content: Text(
+                          'Cartões importados (DPP, Maternidade e Risco ignorados)',
+                        ),
+                      ),
                     );
                   },
                 );

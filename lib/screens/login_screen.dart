@@ -44,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _emailController.text.trim(),
           _senhaController.text.trim(),
         );
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Conta criada com sucesso! Carregando dados...'),

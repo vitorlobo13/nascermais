@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'detalhes_pagamento_screen.dart';
+
+import '../models/gestante.dart';
 import '../services/gestantes_provider.dart';
 import '../services/image_convert_database.dart';
-import '../models/gestante.dart';
+import 'detalhes_pagamento_screen.dart';
 
 class FinanceiroScreen extends StatefulWidget {
   const FinanceiroScreen({super.key});
@@ -95,7 +96,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                             'Acompanhe seus contratos e recebimentos',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withAlpha(230),
                             ),
                           ),
                         ],
@@ -116,7 +117,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                     border: Border.all(color: Colors.white, width: 3),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.black.withAlpha(38),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -145,7 +146,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                 Expanded(
                   child: Card(
                     elevation: 1,
-                    shadowColor: Colors.black.withOpacity(0.03),
+                    shadowColor: Colors.black.withAlpha(8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     color: const Color(0xFFF2FBFC), // Fundo azul claro
                     child: Padding(
@@ -206,7 +207,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                 Expanded(
                   child: Card(
                     elevation: 1,
-                    shadowColor: Colors.black.withOpacity(0.03),
+                    shadowColor: Colors.black.withAlpha(8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     color: const Color(0xFFFDF3F5), // Fundo rosa claro
                     child: Padding(
@@ -375,7 +376,7 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             elevation: 2,
-                            shadowColor: Colors.black.withOpacity(0.04),
+                            shadowColor: Colors.black.withAlpha(10),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                               side: BorderSide(color: Colors.grey.shade100, width: 1),
@@ -395,19 +396,27 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                                     Row(
                                       children: [
                                         // Avatar styled like image
-                                        _buildAvatar(g),
+                                        _GestanteAvatar(
+                                          gestante: g,
+                                          imageProviderService:
+                                              _imageProviderService,
+                                        ),
                                         const SizedBox(width: 12),
                                         // Info
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 g.nome,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: Colors.black87),
                                               ),
                                               const SizedBox(height: 4),
-                                              _buildStatusChip(g),
+                                              _StatusChip(gestante: g),
                                               const SizedBox(height: 6),
                                               Text(
                                                 'R\$ ${g.totalPago.toStringAsFixed(2)} de R\$ ${g.valorContrato.toStringAsFixed(2)}',
@@ -481,14 +490,29 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
     return dia;
   }
 
-  Widget _buildAvatar(Gestante g) {
-    final imageProvider = (g.fotoPath != null && g.fotoPath!.isNotEmpty)
-        ? _imageProviderService.buildImageProvider(g.fotoPath!)
-        : null;
+}
 
-    final isQuitada = g.valorContrato > 0 && g.saldoDevedor <= 0;
-    final bgColor = isQuitada ? const Color(0xFFE0F2F1) : const Color(0xFFFDECEF);
-    final iconColor = isQuitada ? const Color(0xFF007D87) : Colors.pink.shade400;
+class _GestanteAvatar extends StatelessWidget {
+  final Gestante gestante;
+  final ImageProviderService imageProviderService;
+
+  const _GestanteAvatar({
+    required this.gestante,
+    required this.imageProviderService,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final imageProvider =
+        (gestante.fotoPath != null && gestante.fotoPath!.isNotEmpty)
+            ? imageProviderService.buildImageProvider(gestante.fotoPath!)
+            : null;
+
+    final isQuitada = gestante.valorContrato > 0 && gestante.saldoDevedor <= 0;
+    final bgColor =
+        isQuitada ? const Color(0xFFE0F2F1) : const Color(0xFFFDECEF);
+    final iconColor =
+        isQuitada ? const Color(0xFF007D87) : Colors.pink.shade400;
 
     return CircleAvatar(
       radius: 25,
@@ -508,19 +532,28 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
       ),
     );
   }
+}
 
-  Widget _buildStatusChip(Gestante g) {
+class _StatusChip extends StatelessWidget {
+  final Gestante gestante;
+
+  const _StatusChip({
+    required this.gestante,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     String label;
     Color bgColor;
     Color textColor;
     IconData icon;
 
-    if (g.valorContrato == 0) {
+    if (gestante.valorContrato == 0) {
       label = 'A Definir';
       bgColor = Colors.grey.shade100;
       textColor = Colors.grey.shade700;
       icon = Icons.add_circle_outline;
-    } else if (g.contratoEntregue) {
+    } else if (gestante.contratoEntregue) {
       label = 'Contrato Entregue';
       bgColor = const Color(0xFFE8F5E9);
       textColor = const Color(0xFF2E7D32);
@@ -562,11 +595,11 @@ class HeaderWaveClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     final path = Path();
     path.lineTo(0, size.height - 30);
-    
+
     final controlPoint1 = Offset(size.width * 0.35, size.height + 15);
     final controlPoint2 = Offset(size.width * 0.70, size.height - 50);
     final endPoint = Offset(size.width, size.height - 25);
-    
+
     path.cubicTo(
       controlPoint1.dx,
       controlPoint1.dy,
@@ -575,7 +608,7 @@ class HeaderWaveClipper extends CustomClipper<Path> {
       endPoint.dx,
       endPoint.dy,
     );
-    
+
     path.lineTo(size.width, 0);
     path.close();
     return path;

@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withAlpha(10),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.pink.shade100.withOpacity(0.6),
+                                color: Colors.pink.shade100.withAlpha(153),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -366,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
                     filled: true,
-                    fillColor: Colors.pink.shade50.withOpacity(0.5),
+                    fillColor: Colors.pink.shade50.withAlpha(128),
                   ),
                   onChanged: (val) {
                     setState(() {});
@@ -428,6 +428,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             },
                             onDismissed: (direction) async {
                               await provider.excluirGestante(g);
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Dados de ${g.nome} excluídos.')),
                               );
