@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
@@ -28,14 +29,14 @@ class GestantesProvider extends ChangeNotifier {
     return FirebaseAuth.instance.authStateChanges();
   }
 
+  // PERFORMANCE: não carrega as gestantes aqui. Após o login, o authStateChanges
+  // abre a MainNavigation, que já faz a carga inicial (evita baixar tudo 2 vezes).
   Future<void> fazerLogin(String email, String password) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-    await carregarGestantes();
   }
 
   Future<void> cadastrarUsuario(String email, String password) async {
     await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
-    await carregarGestantes();
   }
 
   Future<void> fazerLogout() async {
@@ -60,9 +61,24 @@ class GestantesProvider extends ChangeNotifier {
         .collection('gestantes');
   }
 
-  Future<void> carregarGestantes() async {
-    _isLoading = true;
-    notifyListeners();
+  // PERFORMANCE: se já existe uma carga em andamento, reaproveita a mesma
+  // em vez de disparar outra leitura completa da coleção.
+  Future<void>? _cargaEmAndamento;
+
+  Future<void> carregarGestantes() {
+    return _cargaEmAndamento ??=
+        _executarCarga().whenComplete(() => _cargaEmAndamento = null);
+  }
+
+  Future<void> _executarCarga() async {
+    // PERFORMANCE: a tela cheia de carregamento só aparece na primeira carga
+    // (lista ainda vazia). Recargas posteriores acontecem em segundo plano,
+    // sem esconder a lista que a usuária já está vendo.
+    final primeiraCarga = _gestantes.isEmpty;
+    if (primeiraCarga) {
+      _isLoading = true;
+      notifyListeners();
+    }
     try {
       // Carrega a lista do Firestore
       final snapshot = await _colecaoFirestore.get();
@@ -80,35 +96,72 @@ class GestantesProvider extends ChangeNotifier {
       final docRef = _colecaoFirestore.doc();
       gestante.id = docRef.id;
 
-      if (gestante.fotoPath != null && gestante.fotoPath!.isNotEmpty) {
-        final url = await _uploadFoto(gestante.fotoPath!, gestante.id!);
-        gestante.fotoPath = url;
+      // PERFORMANCE: o cadastro não espera mais o upload da foto.
+      // Grava o documento primeiro (sem a foto), libera a tela e envia a foto
+      // em segundo plano. Enquanto isso, a foto local continua aparecendo no app.
+      final fotoAtual = gestante.fotoPath;
+      final String? fotoParaEnviar = (fotoAtual != null &&
+              fotoAtual.isNotEmpty &&
+              !fotoAtual.startsWith('http'))
+          ? fotoAtual
+          : null;
+
+      final dados = _mapearModelParaFirestore(gestante);
+      if (fotoParaEnviar != null) {
+        dados['fotoPath'] = null;
       }
 
-      await docRef.set(_mapearModelParaFirestore(gestante));
+      await docRef.set(dados);
       _gestantes.add(gestante);
       notifyListeners();
+
+      if (fotoParaEnviar != null) {
+        unawaited(_enviarFotoEmSegundoPlano(gestante, fotoParaEnviar, docRef));
+      }
     } catch (e) {
       developer.log("Erro ao adicionar gestante", error: e);
     }
   }
 
+  Future<void> _enviarFotoEmSegundoPlano(
+    Gestante gestante,
+    String fotoLocal,
+    DocumentReference<Map<String, dynamic>> docRef,
+  ) async {
+    try {
+      final url = await _uploadFoto(fotoLocal, gestante.id!);
+      if (url != null && url.startsWith('http')) {
+        gestante.fotoPath = url;
+        await docRef.update({'fotoPath': url});
+        notifyListeners();
+      }
+    } catch (e) {
+      developer.log("Erro ao enviar foto em segundo plano", error: e);
+    }
+  }
+
   Future<void> atualizarGestante(Gestante gestante) async {
     if (gestante.id == null) return;
+
+    // PERFORMANCE: atualiza a lista local e as telas IMEDIATAMENTE,
+    // sem esperar a resposta do servidor (que antes era compensada
+    // recarregando a coleção inteira ao voltar de cada tela).
+    final index = _gestantes.indexWhere((g) => g.id == gestante.id);
+    if (index != -1) {
+      _gestantes[index] = gestante;
+    }
+    notifyListeners();
+
     try {
-      if (gestante.fotoPath != null && 
-          gestante.fotoPath!.isNotEmpty && 
+      if (gestante.fotoPath != null &&
+          gestante.fotoPath!.isNotEmpty &&
           !gestante.fotoPath!.startsWith('http')) {
         final url = await _uploadFoto(gestante.fotoPath!, gestante.id!);
         gestante.fotoPath = url;
       }
       await _colecaoFirestore.doc(gestante.id).set(_mapearModelParaFirestore(gestante));
 
-      // Atualiza localmente
-      final index = _gestantes.indexWhere((g) => g.id == gestante.id);
-      if (index != -1) {
-        _gestantes[index] = gestante;
-      }
+      // Notifica de novo caso a foto tenha virado URL após o upload
       notifyListeners();
     } catch (e) {
       developer.log("Erro ao atualizar gestante", error: e);
