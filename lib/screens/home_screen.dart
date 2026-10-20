@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/gestante.dart';
 import 'cadastro_screen.dart';
 import 'detalhes_screen.dart';
 import '../services/image_convert_database.dart';
@@ -497,8 +496,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         ),
                                       ),
                                     );
-                                    // Após retornar dos detalhes, garante a recarga dos dados
-                                    provider.carregarGestantes();
+                                    // PERFORMANCE: não recarrega a coleção inteira ao voltar.
+                                    // Toda alteração feita nos detalhes já passa pelo
+                                    // provider.atualizarGestante(), que atualiza a lista local.
                                   },
                                 ),
                               ),
@@ -513,14 +513,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await Navigator.push(
+          // PERFORMANCE: não recarrega a coleção inteira após o cadastro.
+          // O provider.adicionarGestante() já inclui a nova gestante na lista local.
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CadastroScreen()),
           );
-          if (result != null && result is Gestante) {
-            // Recarrega todos os dados do banco para garantir consistência
-            await provider.carregarGestantes();
-          }
         },
         backgroundColor: Colors.pink,
         icon: const Icon(Icons.add, color: Colors.white),

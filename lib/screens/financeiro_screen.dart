@@ -383,12 +383,12 @@ class _FinanceiroScreenState extends State<FinanceiroScreen> {
                             ),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
+                              // PERFORMANCE: não recarrega a coleção inteira ao voltar.
+                              // A tela de pagamento já salva via provider.atualizarGestante().
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => DetalhesPagamentoScreen(gestante: g)),
-                              ).then((_) {
-                                provider.carregarGestantes();
-                              }),
+                              ),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(

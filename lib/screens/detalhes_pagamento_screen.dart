@@ -1,8 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gestante.dart';
 import '../services/notification_service.dart';
 import '../services/gestantes_provider.dart';
+
+/// Converte um valor digitado pela usuária para double, aceitando os formatos
+/// comuns no Brasil: "2500", "2.500", "2,500", "2.500,00", "2500,50", "R$ 2.500,00".
+/// Regra: se o ÚLTIMO separador (ponto ou vírgula) tiver 1 ou 2 dígitos depois,
+/// ele é o separador de centavos; caso contrário, todos os separadores são de milhar.
+double? converterValorMonetario(String texto) {
+  final limpo = texto.replaceAll(RegExp(r'[^0-9.,]'), '');
+  if (limpo.isEmpty) return null;
+
+  final ultimoSeparador = limpo.lastIndexOf(RegExp(r'[.,]'));
+  if (ultimoSeparador == -1) return double.tryParse(limpo);
+
+  final casasDepois = limpo.length - ultimoSeparador - 1;
+  final parteInteira =
+      limpo.substring(0, ultimoSeparador).replaceAll(RegExp(r'[.,]'), '');
+  final parteDepois = limpo.substring(ultimoSeparador + 1);
+
+  if (casasDepois == 1 || casasDepois == 2) {
+    return double.tryParse('$parteInteira.$parteDepois');
+  }
+  return double.tryParse('$parteInteira$parteDepois');
+}
 
 class DetalhesPagamentoScreen extends StatefulWidget {
   final Gestante gestante;
@@ -18,10 +42,31 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
   final _valorPagamentoController = TextEditingController();
   final _notificationService = NotificationService();
 
+  // PERFORMANCE: os campos de texto (valor do contrato e dia de vencimento)
+  // não gravam mais no Firestore a cada tecla. A gravação acontece uma vez,
+  // quando a usuária para de digitar por [_atrasoSalvamento], ou ao sair da tela.
+  static const _atrasoSalvamento = Duration(milliseconds: 800);
+  Timer? _timerSalvamento;
+  GestantesProvider? _provider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Guarda a referência para poder salvar no dispose() sem usar o context.
+    _provider = GestantesStateScope.of(context, listen: false);
+  }
+
   @override
   void initState() {
     super.initState();
-    _valorContratoController = TextEditingController(text: widget.gestante.valorContrato.toString());
+    // Campo vazio quando ainda não há contrato (antes mostrava "0.0", e a usuária
+    // digitava junto com ele). Com valor, mostra no formato brasileiro: 2.500,00
+    final valorAtual = widget.gestante.valorContrato;
+    _valorContratoController = TextEditingController(
+      text: valorAtual == 0
+          ? ''
+          : NumberFormat('#,##0.00', 'pt_BR').format(valorAtual),
+    );
     _diaVencimentoController = TextEditingController(
       text: widget.gestante.diaVencimento?.toString() ?? '',
     );
@@ -29,21 +74,40 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
 
   @override
   void dispose() {
+    // Se ainda havia uma gravação pendente (usuária saiu logo após digitar),
+    // grava agora para não perder a alteração.
+    // (agendado em microtask porque o Flutter não permite notificar a árvore
+    // de widgets durante o dispose)
+    if (_timerSalvamento?.isActive ?? false) {
+      _timerSalvamento!.cancel();
+      scheduleMicrotask(_salvarAgora);
+    }
     _valorContratoController.dispose();
     _diaVencimentoController.dispose();
     _valorPagamentoController.dispose();
     super.dispose();
   }
 
-  /// Centraliza a atualização da UI e das notificações
-  Future<void> _sincronizarDados() async {
+  /// Centraliza a atualização da UI e das notificações.
+  /// [imediato] = false agenda a gravação (usado nos campos de texto);
+  /// true grava na hora (botões e checkbox).
+  Future<void> _sincronizarDados({bool imediato = true}) async {
     if (!mounted) return;
     setState(() {});
+
+    _timerSalvamento?.cancel();
+    if (imediato) {
+      _salvarAgora();
+    } else {
+      _timerSalvamento = Timer(_atrasoSalvamento, _salvarAgora);
+    }
+  }
+
+  void _salvarAgora() {
     _notificationService.atualizarLembrete(widget.gestante);
 
     // SALVAR NO PROVEDOR DE ESTADO (que persiste no banco)
-    GestantesStateScope.of(context, listen: false)
-        .atualizarGestante(widget.gestante);
+    _provider?.atualizarGestante(widget.gestante);
   }
 
   @override
@@ -74,8 +138,8 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
                       border: OutlineInputBorder()
                     ),
                     onChanged: (val) async {
-                      g.valorContrato = double.tryParse(val) ?? 0.0;
-                      await _sincronizarDados();
+                      g.valorContrato = converterValorMonetario(val) ?? 0.0;
+                      await _sincronizarDados(imediato: false);
                     },
                   ),
                 ),
@@ -97,7 +161,7 @@ class _DetalhesPagamentoScreenState extends State<DetalhesPagamentoScreen> {
                       } else if (val.isEmpty) {
                         g.diaVencimento = null;
                       }
-                      await _sincronizarDados();
+                      await _sincronizarDados(imediato: false);
                     },
                   ),
                 ),
@@ -244,4 +308,4 @@ class _ResumoMini extends StatelessWidget {
       ],
     );
   }
-}
+}
